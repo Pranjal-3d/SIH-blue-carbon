@@ -1,0 +1,107 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+/* 🌍 Global Theme Variables */
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+
+  --primary: #1B4965; /* deep blue */
+  --eco: #3F784C;     /* eco green */
+  --soft: #CAE9FF;    /* soft blue */
+  --mint: #EAF4F4;    /* light mint */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* 🌐 Base Body Style */
+body {
+  background: var(--background);
+  color: #0f172a; /* slate-900 */
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ✨ Glassmorphism Effect */
+.glass {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  padding: 1rem;
+}
+
+/* 🃏 Card Dark Mode */
+.card-dark {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.06),
+    rgba(255, 255, 255, 0.04)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-dark:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 20px rgba(27, 73, 101, 0.15);
+}
+
+/* 🎨 Buttons */
+.btn-primary {
+  background: var(--eco);
+  color: #ffffff;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
+}
+.btn-primary:hover {
+  filter: brightness(1.05);
+  transform: translateY(-2px) scale(1.02);
+}
+
+.btn-outline {
+  border: 2px solid var(--primary);
+  color: var(--primary);
+  background: transparent;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
+}
+.btn-outline:hover {
+  background: var(--soft);
+  color: var(--primary);
+  transform: translateY(-2px) scale(1.02);
+}
+
+/* 🌈 Gradients */
+.soft-gradient {
+  background: linear-gradient(135deg, var(--mint) 0%, var(--soft) 100%);
+}
+
+.primary-gradient {
+  background: linear-gradient(135deg, var(--primary), var(--eco));
+  color: #ffffff;
+  
+}
+
+/* 🌟 Utilities */
+.shadow-soft {
+  box-shadow: 0 4px 12px rgba(27, 73, 101, 0.15);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--primary), var(--eco));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
