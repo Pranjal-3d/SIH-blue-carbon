@@ -1,8 +1,13 @@
+"use client";
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
+import { Waves, ArrowLeft } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import "../globals.css";
 
-<<<<<<< HEAD
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -12,11 +17,6 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
-=======
-import { usePathname, useRouter } from "next/navigation";
-import Link from "next/link";
-import { Waves, ArrowLeft } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
 
 const allNavItems = [
   { href: "/dashboard/owner", label: "🌱 Project Owner", desc: "Manage projects", role: "owner" },
@@ -24,21 +24,12 @@ const allNavItems = [
   { href: "/dashboard/buyer", label: "💰 Buyer", desc: "Purchase credits", role: "buyer" },
   { href: "/dashboard/admin", label: "⚙️ Admin", desc: "Platform admin", role: "admin" },
 ];
->>>>>>> e19f3b57632dd080b60abd29838080974ad1ae2b
-
-export const metadata: Metadata = {
-  title: "Blue Carbon Registry",
-  description: "Blockchain-based Blue Carbon Registry & MRV System",
-};
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-<<<<<<< HEAD
 }>) {
-=======
-}) {
   const pathname = usePathname();
   const router = useRouter();
   const [role, setRole] = useState<string | null>(null);
@@ -66,8 +57,6 @@ export default function RootLayout({
     if (!role) return [] as typeof allNavItems;
     return allNavItems.filter((i) => i.role === role);
   }, [role]);
-
->>>>>>> e19f3b57632dd080b60abd29838080974ad1ae2b
   return (
     <html lang="en">
       <body
@@ -110,7 +99,47 @@ export default function RootLayout({
           </header>
 
           {/* Main Content */}
-          <main className="flex-1">{children}</main>
+          <div className="flex-1 flex">
+            {/* Sidebar */}
+            <aside className="w-64 bg-white border-r border-gray-200 p-6">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3 mb-6">
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-green-500 rounded-lg flex items-center justify-center">
+                    <Waves className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="font-semibold text-gray-900">Dashboard</span>
+                </div>
+                
+                <nav className="space-y-2">
+                  {navItems.map((item) => {
+                    const isActive = pathname === item.href;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`block rounded-xl px-4 py-3 font-medium text-sm transition-all ${
+                          isActive
+                            ? "bg-[var(--eco)] text-white shadow-lg"
+                            : "glass hover:bg-[var(--soft)] text-gray-700 hover:shadow-md"
+                        }`}
+                      >
+                        <div className="font-semibold">{item.label}</div>
+                        <div className={`text-xs ${isActive ? 'text-white/80' : 'text-gray-500'}`}>
+                          {item.desc}
+                        </div>
+                      </Link>
+                    );
+                  })}
+                  {!role && (
+                    <div className="text-sm text-gray-600 px-4 py-3">Select a role on the sign-in page.</div>
+                  )}
+                </nav>
+              </div>
+            </aside>
+
+            {/* Main Content Area */}
+            <main className="flex-1">{children}</main>
+          </div>
 
           {/* Newsletter & CTA Section */}
           <section className="relative py-20 bg-gradient-to-br from-blue-800 via-green-700 to-blue-900 overflow-hidden">
@@ -136,7 +165,6 @@ export default function RootLayout({
               </div>
             </div>
 
-<<<<<<< HEAD
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="grid lg:grid-cols-2 gap-12 items-center">
                 {/* Left side - Newsletter */}
@@ -151,34 +179,6 @@ export default function RootLayout({
                     Get updates on new projects, carbon credit opportunities,
                     and ecosystem restoration insights delivered to your inbox.
                   </p>
-=======
-            <nav className="space-y-2">
-              {navItems.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`block rounded-xl px-4 py-3 font-medium text-sm transition-all ${
-                      isActive
-                        ? "bg-[var(--eco)] text-white shadow-lg"
-                        : "glass hover:bg-[var(--soft)] text-gray-700 hover:shadow-md"
-                    }`}
-                  >
-                    <div className="font-semibold">{item.label}</div>
-                    <div className={`text-xs ${isActive ? 'text-white/80' : 'text-gray-500'}`}>
-                      {item.desc}
-                    </div>
-                  </Link>
-                );
-              })}
-              {!role && (
-                <div className="text-sm text-gray-600 px-4 py-3">Select a role on the sign-in page.</div>
-              )}
-            </nav>
-          </div>
-        </aside>
->>>>>>> e19f3b57632dd080b60abd29838080974ad1ae2b
 
                   <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto lg:mx-0">
                     <input

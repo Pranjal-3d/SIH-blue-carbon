@@ -80,7 +80,7 @@ export default function BlueCarbonLanding() {
               <Link href="/auth" className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                 Login
               </Link>
-              <a href="/register-project" className="px-6 py-2 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg hover:shadow-lg transition-all">
+              <a href="/dashboard/Register" className="px-6 py-2 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg hover:shadow-lg transition-all">
                 Register Project
               </a>
             </div>
@@ -105,7 +105,7 @@ export default function BlueCarbonLanding() {
               <a href="/mrv-system" className="block px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-md">MRV System</a>
               <div className="pt-4 flex flex-col space-y-2">
                 <Link href="/auth" className="px-3 py-2 text-blue-600 text-left">Login</Link>
-                <a href="/register-project" className="px-3 py-2 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg">
+                <a href="/dashboard/Register" className="px-3 py-2 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg">
                   Register Project
                 </a>
               </div>
@@ -137,14 +137,11 @@ export default function BlueCarbonLanding() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <a href="/register-project" className="px-8 py-4 bg-white text-blue-600 rounded-xl font-semibold hover:shadow-xl transition-all glow group">
+              <a href="/auth" className="px-8 py-4 bg-white text-blue-600 rounded-xl font-semibold hover:shadow-xl transition-all glow group">
                 <span className="flex items-center justify-center">
-                  Register Your Project
+                  Get Started
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-2 transition-transform" />
                 </span>
-              </a>
-              <a href="/marketplace" className="px-8 py-4 border-2 border-white text-white rounded-xl font-semibold hover:bg-white hover:text-blue-600 transition-all">
-                Explore Marketplace
               </a>
             </div>
 

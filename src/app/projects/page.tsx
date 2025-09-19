@@ -34,7 +34,7 @@ export default function ProjectsPage() {
           <h1 className="text-3xl font-bold">Projects</h1>
           <p className="text-sm text-gray-600">Search, filter and explore verified blue carbon projects</p>
         </div>
-        <Link href="/register-project" className="inline-flex items-center h-10 px-4 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-700">Register a Project</Link>
+        <Link href="/dashboard/Register" className="inline-flex items-center h-10 px-4 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-700">Register a Project</Link>
       </div>
 
       <div className="rounded-xl border bg-white p-4 shadow-sm mb-8">
