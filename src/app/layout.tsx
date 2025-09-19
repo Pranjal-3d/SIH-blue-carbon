@@ -95,7 +95,7 @@ export default function RootLayout({
                     <li>
                       <a
                         className="hover:text-white"
-                        href="/dashboard/owner"
+                        href="/dashboard/owner"  
                       >
                         Owner Dashboard
                       </a>

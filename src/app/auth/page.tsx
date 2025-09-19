@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Waves, Lock, Mail, Eye, EyeOff, Chrome, Shield, UserCheck, Settings } from "lucide-react";
+import { Waves, Lock, Mail, Eye, EyeOff, Shield, UserCheck, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function ProfessionalLoginPage() {
@@ -11,6 +11,7 @@ export default function ProfessionalLoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [userRole, setUserRole] = useState("owner");
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -31,24 +32,46 @@ export default function ProfessionalLoginPage() {
     router.replace(roleToPath[role] ?? "/dashboard/owner");
   };
 
+  // Simple mock credentials per role (assume provided by admin in DB)
+  const credentialsByRole: Record<string, Array<{ email: string; password: string }>> = {
+    admin: [{ email: "admin@bluecarbon.gov", password: "Admin@123" }],
+    owner: [
+      { email: "owner1@example.com", password: "Owner@123" },
+      { email: "owner2@example.com", password: "Owner@123" },
+    ],
+    verifier: [
+      { email: "verifier@example.com", password: "Verify@123" },
+    ],
+    buyer: [
+      { email: "buyer@example.com", password: "Buyer@123" },
+    ],
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
 
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    const allowed = credentialsByRole[userRole]?.some(
+      (c) => c.email.toLowerCase() === email.toLowerCase() && c.password === password
+    );
+
+    if (!allowed) {
+      setIsLoading(false);
+      setError("Invalid credentials for selected role");
+      return;
+    }
 
     redirectToRoleDashboard(userRole);
     setIsLoading(false);
   };
 
-  const handleGoogleLogin = () => {
-    redirectToRoleDashboard(userRole);
-  };
-
   const userRoles = [
     { id: "owner", label: "Project Owner", icon: Settings, description: "Create projects and upload evidence", color: "from-emerald-600 to-emerald-700" },
     { id: "verifier", label: "Verifier", icon: UserCheck, description: "Review submissions and approve", color: "from-blue-600 to-blue-700" },
-    { id: "buyer", label: "Buyer", icon: Chrome, description: "Buy and retire credits", color: "from-amber-600 to-amber-700" },
+    { id: "buyer", label: "Buyer", icon: Settings, description: "Buy and retire credits", color: "from-amber-600 to-amber-700" },
     { id: "admin", label: "Administrator", icon: Shield, description: "Platform administration", color: "from-red-600 to-red-700" },
   ];
 
@@ -79,7 +102,7 @@ export default function ProfessionalLoginPage() {
             </div>
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h2>
-              <p className="text-gray-600">Sign in to continue to your account</p>
+              <p className="text-gray-600">Sign in with credentials provided by admin</p>
             </div>
           </div>
 
@@ -119,26 +142,17 @@ export default function ProfessionalLoginPage() {
             </div>
           </div>
 
-          <button
-            onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-center space-x-3 py-4 px-6 border-2 border-gray-200 rounded-xl hover:border-gray-300 hover:bg-gray-50 transition-all duration-200 group"
-          >
-            <Chrome className="h-5 w-5 text-gray-600 group-hover:text-gray-800 transition-colors" />
-            <span className="font-semibold text-gray-700 group-hover:text-gray-900">
-              Continue with Google as {userRoles.find((r) => r.id === userRole)?.label}
-            </span>
-          </button>
-
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-200"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500 font-medium">Or continue with email</span>
+              <span className="px-4 bg-white text-gray-500 font-medium">Sign in with email</span>
             </div>
           </div>
 
           <div className="space-y-6">
+            {error && <div className="text-sm text-red-600">{error}</div>}
             <div className="space-y-1">
               <label className="text-sm font-semibold text-gray-700 ml-1">Email Address</label>
               <div className="relative">
@@ -186,9 +200,7 @@ export default function ProfessionalLoginPage() {
                 />
                 <span className="text-sm text-gray-600 font-medium">Remember me</span>
               </label>
-              <a href="#" className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors">
-                Forgot password?
-              </a>
+              <span className="text-sm text-gray-400">Admin issues credentials</span>
             </div>
 
             <button
@@ -205,15 +217,6 @@ export default function ProfessionalLoginPage() {
                 "Sign In"
               )}
             </button>
-          </div>
-
-          <div className="text-center pt-4 border-t border-gray-100">
-            <p className="text-gray-600">
-              Don't have an account? {""}
-              <a href="#" className="text-blue-600 font-bold hover:text-blue-700 transition-colors hover:underline">
-                Create Account
-              </a>
-            </p>
           </div>
         </div>
 
