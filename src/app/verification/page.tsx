@@ -45,9 +45,14 @@ function MediaModal({ open, onClose, type, items }: { open: boolean; onClose: ()
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div className="relative z-10 w-full max-w-5xl mx-4 rounded-xl bg-white shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-3 border-b bg-gradient-to-r from-emerald-50 to-blue-50">
-          <h3 className="font-semibold">{type === "photos" ? "Photo Gallery" : "Videos"}</h3>
-          <Button size="sm" variant="secondary" onClick={onClose}>Close</Button>
+        <div className="flex items-center justify-between px-5 py-3 border-b bg-gradient-to-r from-purple-50 to-blue-50">
+          <h3 className="font-semibold text-gray-800">{type === "photos" ? "Photo Gallery" : "Videos"}</h3>
+          <button 
+            onClick={onClose}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+          >
+            Close
+          </button>
         </div>
         <div className="p-5">
           {type === "photos" ? (
@@ -152,227 +157,319 @@ export default function VerificationPage() {
   const reject = () => setStatus("❌ Project Rejected!");
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-emerald-50">
-      <div className="mx-auto max-w-6xl px-4 py-10">
-        <div className="mb-8 flex items-center justify-between gap-3">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-blue-600">Verification Dashboard</h1>
-            <p className="mt-1 text-sm text-gray-600">Review inspector uploads and approve or reject.</p>
+    <div className="min-h-screen bg-gradient-to-b from-purple-600 to-blue-800">
+      {/* Header */}
+      <div className="bg-white shadow-sm">
+        <div className="mx-auto max-w-6xl px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gradient-to-r from-teal-400 to-green-400 rounded-lg flex items-center justify-center">
+                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2L2 7v10c0 5.55 3.84 9.74 9 11 5.16-1.26 9-5.45 9-11V7l-10-5z"/>
+                </svg>
+              </div>
+              <h1 className="text-xl font-bold text-gray-800">BlueCarbon</h1>
+            </div>
+            <div className="flex items-center gap-6">
+              <nav className="hidden md:flex items-center gap-6">
+                <a href="#" className="text-gray-700 hover:text-gray-900 font-medium">Home</a>
+                <a href="#" className="text-gray-700 hover:text-gray-900 font-medium">Projects</a>
+                <a href="#" className="text-gray-700 hover:text-gray-900 font-medium">Marketplace</a>
+                <a href="#" className="text-gray-700 hover:text-gray-900 font-medium">About</a>
+                <a href="#" className="text-gray-700 hover:text-gray-900 font-medium">MRV System</a>
+              </nav>
+              <div className="flex items-center gap-3">
+                <a href="#" className="text-gray-700 hover:text-gray-900 font-medium">Login</a>
+                <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                  Register Project
+                </button>
+              </div>
+            </div>
           </div>
-          <Badge color="emerald">Verifier View</Badge>
+        </div>
         </div>
 
+      <div className="mx-auto max-w-6xl px-4 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-2 transition-shadow hover:shadow-md">
-            <CardHeader title="Basic Info" subtitle="Project identification and location" />
-            <CardBody>
+          <div className="lg:col-span-2 bg-purple-500/20 backdrop-blur-sm rounded-xl p-6 border border-purple-400/30">
+            <div className="mb-4">
+              <h3 className="text-xl font-semibold text-white mb-2">Basic Info</h3>
+              <p className="text-white/80 text-sm">Project identification and location</p>
+            </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="rounded-lg border p-4">
-                  <p className="text-xs text-gray-500">Project ID</p>
-                  <p className="font-medium">{data.projectId}</p>
+              <div className="rounded-lg bg-purple-400/20 border border-purple-300/30 p-4">
+                <p className="text-xs text-white/70">Project ID</p>
+                <p className="font-medium text-white">{data.projectId}</p>
                 </div>
-                <div className="rounded-lg border p-4">
-                  <p className="text-xs text-gray-500">Plot ID</p>
-                  <p className="font-medium">{data.plotId}</p>
+              <div className="rounded-lg bg-purple-400/20 border border-purple-300/30 p-4">
+                <p className="text-xs text-white/70">Plot ID</p>
+                <p className="font-medium text-white">{data.plotId}</p>
                 </div>
-                <div className="rounded-lg border p-4">
-                  <p className="text-xs text-gray-500">Inspector</p>
-                  <p className="font-medium">{data.inspector}</p>
+              <div className="rounded-lg bg-purple-400/20 border border-purple-300/30 p-4">
+                <p className="text-xs text-white/70">Inspector</p>
+                <p className="font-medium text-white">{data.inspector}</p>
                 </div>
-                <div className="rounded-lg border p-4">
-                  <p className="text-xs text-gray-500">Timestamp</p>
-                  <p className="font-medium">{mounted && clientTimestamp ? new Date(clientTimestamp).toLocaleString() : "—"}</p>
+              <div className="rounded-lg bg-purple-400/20 border border-purple-300/30 p-4">
+                <p className="text-xs text-white/70">Timestamp</p>
+                <p className="font-medium text-white">{mounted && clientTimestamp ? new Date(clientTimestamp).toLocaleString() : "—"}</p>
                 </div>
               </div>
               <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="rounded-lg border p-4">
-                  <p className="text-xs text-gray-500">Ecosystem</p>
-                  <p className="font-medium capitalize">{data.ecosystemType}</p>
+              <div className="rounded-lg bg-purple-400/20 border border-purple-300/30 p-4">
+                <p className="text-xs text-white/70">Ecosystem</p>
+                <p className="font-medium text-white capitalize">{data.ecosystemType}</p>
                 </div>
-                <div className="rounded-lg border p-4">
-                  <p className="text-xs text-gray-500">GPS</p>
-                  <p className="font-medium">{formatLatLon(data.gps.latitude, data.gps.longitude)}</p>
+              <div className="rounded-lg bg-purple-400/20 border border-purple-300/30 p-4">
+                <p className="text-xs text-white/70">GPS</p>
+                <p className="font-medium text-white">{formatLatLon(data.gps.latitude, data.gps.longitude)}</p>
                 </div>
-                <div className="rounded-lg border p-4">
-                  <p className="text-xs text-gray-500">Precision</p>
-                  <p className="font-medium">±{data.gps.precision.toFixed(1)} m</p>
-                </div>
+              <div className="rounded-lg bg-purple-400/20 border border-purple-300/30 p-4">
+                <p className="text-xs text-white/70">Precision</p>
+                <p className="font-medium text-white">±{data.gps.precision.toFixed(1)} m</p>
               </div>
-              <a href={mapsUrl} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 text-blue-700 hover:underline">
+            </div>
+            <a href={mapsUrl} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 text-teal-400 hover:text-teal-300 transition-colors">
                 <MapPin className="h-4 w-4" /> Open in Google Maps
               </a>
-            </CardBody>
-          </Card>
+          </div>
 
-          <Card className="transition-shadow hover:shadow-md">
-            <CardHeader title="Media Proof" subtitle="Visual evidence of plantation" />
-            <CardBody>
+          <div className="bg-purple-500/20 backdrop-blur-sm rounded-xl p-6 border border-purple-400/30">
+            <div className="mb-4">
+              <h3 className="text-xl font-semibold text-white mb-2">Media Proof</h3>
+              <p className="text-white/80 text-sm">Visual evidence of plantation</p>
+            </div>
               <div className="flex flex-col sm:flex-row gap-3">
-                <Button onClick={() => setMediaOpen({ type: "photos" })} className="w-full sm:w-auto">
-                  <ImageIcon className="mr-2 h-4 w-4" /> View Photos ({data.media.photos.length})
-                </Button>
-                <Button variant="secondary" onClick={() => setMediaOpen({ type: "videos" })} className="w-full sm:w-auto">
-                  <VideoIcon className="mr-2 h-4 w-4" /> View Videos ({data.media.videos.length})
-                </Button>
+              <button 
+                onClick={() => setMediaOpen({ type: "photos" })} 
+                className="bg-white text-blue-600 border border-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+              >
+                <ImageIcon className="h-4 w-4" /> View Photos ({data.media.photos.length})
+              </button>
+              <button 
+                onClick={() => setMediaOpen({ type: "videos" })} 
+                className="bg-transparent text-white border border-white hover:bg-white/10 px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+              >
+                <VideoIcon className="h-4 w-4" /> View Videos ({data.media.videos.length})
+              </button>
               </div>
               <div className="mt-4 grid grid-cols-3 gap-2">
                 {data.media.photos.slice(0, 3).map((src, i) => (
-                  <div key={i} className="relative overflow-hidden rounded-md border">
+                <div key={i} className="relative overflow-hidden rounded-md border border-purple-300/30">
                     <img src={src} alt={`thumb-${i}`} className="aspect-video w-full object-cover transition-transform duration-300 hover:scale-105" />
                     <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
                   </div>
                 ))}
               </div>
-            </CardBody>
-          </Card>
+          </div>
         </div>
 
         <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-2 transition-shadow hover:shadow-md">
-            <CardHeader title="Ecosystem Data" subtitle="Schema-driven fields" />
-            <CardBody>
+          <div className="lg:col-span-2 bg-purple-500/20 backdrop-blur-sm rounded-xl p-6 border border-purple-400/30">
+            <div className="mb-4">
+              <h3 className="text-xl font-semibold text-white mb-2">Ecosystem Data</h3>
+              <p className="text-white/80 text-sm">Schema-driven fields</p>
+            </div>
               {data.ecosystemData.type === "mangrove" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="rounded-lg border p-4">
-                    <p className="text-xs text-gray-500">Species List</p>
-                    <p className="font-medium">{data.ecosystemData.speciesList.join(", ")}</p>
+                <div className="rounded-lg bg-purple-400/20 border border-purple-300/30 p-4">
+                  <p className="text-xs text-white/70">Species List</p>
+                  <p className="font-medium text-white">{data.ecosystemData.speciesList.join(", ")}</p>
                   </div>
-                  <div className="rounded-lg border p-4">
-                    <p className="text-xs text-gray-500">Tree Count</p>
-                    <p className="font-medium">{data.ecosystemData.treeCount}</p>
+                <div className="rounded-lg bg-purple-400/20 border border-purple-300/30 p-4">
+                  <p className="text-xs text-white/70">Tree Count</p>
+                  <p className="font-medium text-white">{data.ecosystemData.treeCount}</p>
                   </div>
-                  <div className="rounded-lg border p-4">
-                    <p className="text-xs text-gray-500">Average Height</p>
-                    <p className="font-medium">{data.ecosystemData.avgHeightM} m</p>
+                <div className="rounded-lg bg-purple-400/20 border border-purple-300/30 p-4">
+                  <p className="text-xs text-white/70">Average Height</p>
+                  <p className="font-medium text-white">{data.ecosystemData.avgHeightM} m</p>
                   </div>
-                  <div className="rounded-lg border p-4">
-                    <p className="text-xs text-gray-500">Seedlings</p>
-                    <p className="font-medium">{data.ecosystemData.seedlingsCount}</p>
+                <div className="rounded-lg bg-purple-400/20 border border-purple-300/30 p-4">
+                  <p className="text-xs text-white/70">Seedlings</p>
+                  <p className="font-medium text-white">{data.ecosystemData.seedlingsCount}</p>
                   </div>
                 </div>
               )}
               {data.ecosystemData.type === "seagrass" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="rounded-lg border p-4">
-                    <p className="text-xs text-gray-500">Species List</p>
-                    <p className="font-medium">{data.ecosystemData.speciesList.join(", ")}</p>
+                <div className="rounded-lg bg-purple-400/20 border border-purple-300/30 p-4">
+                  <p className="text-xs text-white/70">Species List</p>
+                  <p className="font-medium text-white">{data.ecosystemData.speciesList.join(", ")}</p>
                   </div>
-                  <div className="rounded-lg border p-4">
-                    <p className="text-xs text-gray-500">Meadow Area</p>
-                    <p className="font-medium">{data.ecosystemData.meadowAreaHa} ha</p>
+                <div className="rounded-lg bg-purple-400/20 border border-purple-300/30 p-4">
+                  <p className="text-xs text-white/70">Meadow Area</p>
+                  <p className="font-medium text-white">{data.ecosystemData.meadowAreaHa} ha</p>
                   </div>
-                  <div className="rounded-lg border p-4">
-                    <p className="text-xs text-gray-500">Shoot Density</p>
-                    <p className="font-medium">{data.ecosystemData.shootDensityPerM2} / m²</p>
+                <div className="rounded-lg bg-purple-400/20 border border-purple-300/30 p-4">
+                  <p className="text-xs text-white/70">Shoot Density</p>
+                  <p className="font-medium text-white">{data.ecosystemData.shootDensityPerM2} / m²</p>
                   </div>
-                  <div className="rounded-lg border p-4">
-                    <p className="text-xs text-gray-500">Biomass</p>
-                    <p className="font-medium">{data.ecosystemData.biomassTPerHa} t/ha</p>
+                <div className="rounded-lg bg-purple-400/20 border border-purple-300/30 p-4">
+                  <p className="text-xs text-white/70">Biomass</p>
+                  <p className="font-medium text-white">{data.ecosystemData.biomassTPerHa} t/ha</p>
                   </div>
                 </div>
               )}
               {data.ecosystemData.type === "salt marsh" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="rounded-lg border p-4">
-                    <p className="text-xs text-gray-500">Species List</p>
-                    <p className="font-medium">{data.ecosystemData.speciesList.join(", ")}</p>
+                <div className="rounded-lg bg-purple-400/20 border border-purple-300/30 p-4">
+                  <p className="text-xs text-white/70">Species List</p>
+                  <p className="font-medium text-white">{data.ecosystemData.speciesList.join(", ")}</p>
                   </div>
-                  <div className="rounded-lg border p-4">
-                    <p className="text-xs text-gray-500">Area</p>
-                    <p className="font-medium">{data.ecosystemData.areaHa} ha</p>
+                <div className="rounded-lg bg-purple-400/20 border border-purple-300/30 p-4">
+                  <p className="text-xs text-white/70">Area</p>
+                  <p className="font-medium text-white">{data.ecosystemData.areaHa} ha</p>
                   </div>
-                  <div className="rounded-lg border p-4">
-                    <p className="text-xs text-gray-500">Vegetation Height</p>
-                    <p className="font-medium">{data.ecosystemData.vegetationHeightCm} cm</p>
-                  </div>
-                  <div className="rounded-lg border p-4">
-                    <p className="text-xs text-gray-500">Biomass</p>
-                    <p className="font-medium">{data.ecosystemData.biomassTPerHa} t/ha</p>
-                  </div>
+                <div className="rounded-lg bg-purple-400/20 border border-purple-300/30 p-4">
+                  <p className="text-xs text-white/70">Vegetation Height</p>
+                  <p className="font-medium text-white">{data.ecosystemData.vegetationHeightCm} cm</p>
                 </div>
-              )}
-              {(data.ecosystemData.type === "tidal flat" || data.ecosystemData.type === "coastal peatland") && (
-                <div className="rounded-lg border p-4">
-                  <p className="text-xs text-gray-500 capitalize">{data.ecosystemData.type} notes</p>
-                  <p className="font-medium">{"notes" in data.ecosystemData ? data.ecosystemData.notes ?? "—" : "—"}</p>
+                <div className="rounded-lg bg-purple-400/20 border border-purple-300/30 p-4">
+                  <p className="text-xs text-white/70">Biomass</p>
+                  <p className="font-medium text-white">{data.ecosystemData.biomassTPerHa} t/ha</p>
                 </div>
-              )}
-            </CardBody>
-          </Card>
+              </div>
+            )}
+            {(data.ecosystemData.type === "tidal flat" || data.ecosystemData.type === "coastal peatland") && (
+              <div className="rounded-lg bg-purple-400/20 border border-purple-300/30 p-4">
+                <p className="text-xs text-white/70 capitalize">{data.ecosystemData.type} notes</p>
+                <p className="font-medium text-white">{"notes" in data.ecosystemData ? data.ecosystemData.notes ?? "—" : "—"}</p>
+              </div>
+            )}
+          </div>
 
-          <Card className="transition-shadow hover:shadow-md">
-            <CardHeader title="Carbon Estimate" subtitle="Calculated CO₂ sequestration" />
-            <CardBody>
-              <div className="rounded-lg border p-5">
-                <p className="text-xs text-gray-500">Estimated CO₂ Sequestration</p>
-                <p className="mt-1 text-4xl font-semibold tracking-tight text-emerald-700">{data.co2EstimateTPerYear.toFixed(1)} <span className="text-base font-normal text-gray-600">t/yr</span></p>
-              </div>
-              <div className="mt-4 text-xs text-gray-600">
-                Evidence hash: <span className="font-mono">{data.evidenceHash}</span>
-              </div>
-            </CardBody>
-          </Card>
+          <div className="bg-purple-500/20 backdrop-blur-sm rounded-xl p-6 border border-purple-400/30">
+            <div className="mb-4">
+              <h3 className="text-xl font-semibold text-white mb-2">Carbon Estimate</h3>
+              <p className="text-white/80 text-sm">Calculated CO₂ sequestration</p>
+            </div>
+            <div className="rounded-lg bg-purple-400/20 border border-purple-300/30 p-5">
+              <p className="text-xs text-white/70">Estimated CO₂ Sequestration</p>
+              <p className="mt-1 text-4xl font-semibold tracking-tight text-teal-400">{data.co2EstimateTPerYear.toFixed(1)} <span className="text-base font-normal text-white/80">t/yr</span></p>
+            </div>
+            <div className="mt-4 text-xs text-white/70">
+              Evidence hash: <span className="font-mono text-teal-400">{data.evidenceHash}</span>
+            </div>
+          </div>
         </div>
 
         <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-2 transition-shadow hover:shadow-md">
-            <CardHeader title="Soil & Sensor Data" subtitle="Soil cores and onsite measurements" />
-            <CardBody>
+          <div className="lg:col-span-2 bg-purple-500/20 backdrop-blur-sm rounded-xl p-6 border border-purple-400/30">
+            <div className="mb-4">
+              <h3 className="text-xl font-semibold text-white mb-2">Soil & Sensor Data</h3>
+              <p className="text-white/80 text-sm">Soil cores and onsite measurements</p>
+            </div>
               <div className="overflow-x-auto">
-                <table className="min-w-full border rounded-lg overflow-hidden">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Core ID</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Depth (cm)</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Label</th>
+              <table className="min-w-full border border-purple-300/30 rounded-lg overflow-hidden">
+                <thead className="bg-purple-400/20">
+                  <tr>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Core ID</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Depth (cm)</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-white/70 uppercase tracking-wider">Label</th>
                     </tr>
                   </thead>
                   <tbody>
                     {data.soilCores.map((c) => (
-                      <tr key={c.soilCoreId} className="border-t">
-                        <td className="px-4 py-2 font-medium">{c.soilCoreId}</td>
-                        <td className="px-4 py-2">{c.depthCm}</td>
-                        <td className="px-4 py-2">{c.label}</td>
+                    <tr key={c.soilCoreId} className="border-t border-purple-300/30">
+                      <td className="px-4 py-2 font-medium text-white">{c.soilCoreId}</td>
+                      <td className="px-4 py-2 text-white">{c.depthCm}</td>
+                      <td className="px-4 py-2 text-white">{c.label}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
               <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="rounded-lg border p-4">
-                  <p className="text-xs text-gray-500">Salinity</p>
-                  <p className="font-medium">{data.sensors.salinityPsu} PSU</p>
+              <div className="rounded-lg bg-purple-400/20 border border-purple-300/30 p-4">
+                <p className="text-xs text-white/70">Salinity</p>
+                <p className="font-medium text-white">{data.sensors.salinityPsu} PSU</p>
                 </div>
-                <div className="rounded-lg border p-4">
-                  <p className="text-xs text-gray-500">Water Temperature</p>
-                  <p className="font-medium">{data.sensors.waterTemperatureC} °C</p>
+              <div className="rounded-lg bg-purple-400/20 border border-purple-300/30 p-4">
+                <p className="text-xs text-white/70">Water Temperature</p>
+                <p className="font-medium text-white">{data.sensors.waterTemperatureC} °C</p>
                 </div>
-                <div className="rounded-lg border p-4">
-                  <p className="text-xs text-gray-500">pH</p>
-                  <p className="font-medium">{data.sensors.pH}</p>
-                </div>
+              <div className="rounded-lg bg-purple-400/20 border border-purple-300/30 p-4">
+                <p className="text-xs text-white/70">pH</p>
+                <p className="font-medium text-white">{data.sensors.pH}</p>
               </div>
-            </CardBody>
-          </Card>
+            </div>
+          </div>
 
-          <Card className="transition-shadow hover:shadow-md">
-            <CardHeader title="Actions" subtitle="Approve or reject the verification" />
-            <CardBody>
+          <div className="bg-purple-500/20 backdrop-blur-sm rounded-xl p-6 border border-purple-400/30">
+            <div className="mb-4">
+              <h3 className="text-xl font-semibold text-white mb-2">Actions</h3>
+              <p className="text-white/80 text-sm">Approve or reject the verification</p>
+            </div>
               <div className="flex flex-col sm:flex-row gap-3">
-                <Button onClick={approve} className="w-full sm:w-auto">
-                  <CheckCircle className="mr-2 h-4 w-4" /> Approve
-                </Button>
-                <Button variant="secondary" onClick={reject} className="w-full sm:w-auto">
-                  <XCircle className="mr-2 h-4 w-4" /> Reject
-                </Button>
+              <button 
+                onClick={approve} 
+                className="bg-white text-blue-600 border border-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+              >
+                <CheckCircle className="h-4 w-4" /> Approve
+              </button>
+              <button 
+                onClick={reject} 
+                className="bg-transparent text-white border border-white hover:bg-white/10 px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+              >
+                <XCircle className="h-4 w-4" /> Reject
+              </button>
               </div>
               {status && (
-                <div className="mt-4 rounded-md border bg-gray-50 px-4 py-3 text-sm text-gray-700">
+              <div className="mt-4 rounded-md border border-purple-300/30 bg-purple-400/20 px-4 py-3 text-sm text-white">
                   {status}
                 </div>
               )}
-            </CardBody>
-          </Card>
+          </div>
+        </div>
+
+        {/* Statistical Cards Section */}
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="bg-purple-500/20 backdrop-blur-sm rounded-xl p-6 border border-purple-400/30 text-center">
+            <div className="flex justify-center mb-3">
+              <div className="w-8 h-8 bg-teal-400 rounded-full flex items-center justify-center">
+                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2L2 7v10c0 5.55 3.84 9.74 9 11 5.16-1.26 9-5.45 9-11V7l-10-5z"/>
+                </svg>
+              </div>
+            </div>
+            <div className="text-3xl font-bold text-white mb-1">{data.co2EstimateTPerYear.toFixed(0)}</div>
+            <div className="text-sm text-white/80">tCO2e</div>
+          </div>
+          
+          <div className="bg-purple-500/20 backdrop-blur-sm rounded-xl p-6 border border-purple-400/30 text-center">
+            <div className="flex justify-center mb-3">
+              <div className="w-8 h-8 bg-teal-400 rounded-full flex items-center justify-center">
+                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+              </div>
+            </div>
+            <div className="text-3xl font-bold text-white mb-1">1</div>
+            <div className="text-sm text-white/80">Credits Issued</div>
+          </div>
+          
+          <div className="bg-purple-500/20 backdrop-blur-sm rounded-xl p-6 border border-purple-400/30 text-center">
+            <div className="flex justify-center mb-3">
+              <div className="w-8 h-8 bg-teal-400 rounded-full flex items-center justify-center">
+                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+              </div>
+            </div>
+            <div className="text-3xl font-bold text-white mb-1">1</div>
+            <div className="text-sm text-white/80">Active Projects</div>
+          </div>
+          
+          <div className="bg-purple-500/20 backdrop-blur-sm rounded-xl p-6 border border-purple-400/30 text-center">
+            <div className="flex justify-center mb-3">
+              <div className="w-8 h-8 bg-teal-400 rounded-full flex items-center justify-center">
+                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                </svg>
+              </div>
+            </div>
+            <div className="text-3xl font-bold text-white mb-1">0.5</div>
+            <div className="text-sm text-white/80">Verified Area (ha)</div>
+          </div>
         </div>
 
         <MediaModal
