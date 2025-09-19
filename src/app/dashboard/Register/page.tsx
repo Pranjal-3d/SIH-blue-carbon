@@ -34,6 +34,7 @@ interface Document {
 }
 
 interface FormData {
+  projectId: string;
   projectName: string;
   description: string;
   ecosystemType: string;
@@ -71,6 +72,7 @@ interface CurrentLocation {
 export default function ProjectRegistrationPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<FormData>({
+    projectId: '',
     projectName: '',
     description: '',
     ecosystemType: '',
@@ -108,7 +110,7 @@ export default function ProjectRegistrationPage() {
   const particlesRef = useRef<Particle[]>([]);
 
   const steps = [
-    { title: "Project Basics", icon: <TreePine className="h-5 w-5" />, fields: 4 },
+    { title: "Project Basics", icon: <TreePine className="h-5 w-5" />, fields: 5 },
     { title: "Organization", icon: <Building className="h-5 w-5" />, fields: 3 },
     { title: "Location & Area", icon: <MapPin className="h-5 w-5" />, fields: 3 },
     { title: "Plantation Data", icon: <Leaf className="h-5 w-5" />, fields: 6 },
@@ -205,6 +207,13 @@ export default function ProjectRegistrationPage() {
     return Math.round(totalCO2 * 100) / 100; // Round to 2 decimal places
   };
 
+  // Generate unique project ID
+  const generateProjectId = (): string => {
+    const timestamp = Date.now().toString(36).toUpperCase();
+    const randomString = Math.random().toString(36).substring(2, 8).toUpperCase();
+    return `BC-${timestamp}-${randomString}`;
+  };
+
   // Particle animation system
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -265,6 +274,11 @@ export default function ProjectRegistrationPage() {
     
     animate();
     setIsVisible(true);
+
+    // Generate project ID on initial load
+    if (!formData.projectId) {
+      setFormData(prev => ({ ...prev, projectId: generateProjectId() }));
+    }
   }, []);
 
   // Mouse tracking for interactive effects
@@ -481,6 +495,27 @@ export default function ProjectRegistrationPage() {
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-6">
+                    {/* Project ID Field */}
+                    <div className="space-y-2">
+                      <label className="text-white font-medium flex items-center space-x-2">
+                        <Target className="h-4 w-4 text-purple-400" />
+                        <span>Project ID</span>
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={formData.projectId}
+                          readOnly
+                          className="w-full p-4 bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/30 rounded-xl text-white font-mono text-lg tracking-wider backdrop-blur-sm"
+                          placeholder="Generating..."
+                        />
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          <Sparkles className="h-5 w-5 text-purple-400 animate-pulse" />
+                        </div>
+                      </div>
+                      <p className="text-purple-200 text-sm">Auto-generated unique identifier</p>
+                    </div>
+
                     <div className="space-y-2">
                       <label className="text-white font-medium flex items-center space-x-2">
                         <Sparkles className="h-4 w-4 text-yellow-400" />
@@ -495,7 +530,7 @@ export default function ProjectRegistrationPage() {
                       />
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="md:col-span-2 space-y-2">
                       <label className="text-white font-medium">Ecosystem Type</label>
                       <div className="grid grid-cols-2 gap-3">
                         {ecosystemTypes.map((type) => (
@@ -1049,6 +1084,16 @@ export default function ProjectRegistrationPage() {
                   </div>
 
                   <div className="space-y-6">
+                    {/* Project ID Display */}
+                    <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-2xl p-6 border border-purple-400/30 text-center">
+                      <Target className="h-8 w-8 text-purple-400 mx-auto mb-2" />
+                      <h3 className="text-white font-semibold mb-2">Project ID</h3>
+                      <div className="text-2xl font-mono tracking-wider text-white bg-black/20 rounded-lg py-2 px-4 inline-block">
+                        {formData.projectId}
+                      </div>
+                      <p className="text-purple-200 text-sm mt-2">Keep this ID for future reference</p>
+                    </div>
+
                     {/* Summary Cards */}
                     <div className="grid md:grid-cols-2 gap-6">
                       <div className="bg-white/10 rounded-2xl p-6 border border-white/20">
