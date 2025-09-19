@@ -1,15 +1,15 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Waves, ArrowLeft } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
-const navItems = [
-  { href: "/dashboard/owner", label: "🌱 Project Owner", desc: "Manage projects" },
-  { href: "/dashboard/verifier", label: "✅ Verifier", desc: "Review submissions" },
-  { href: "/dashboard/buyer", label: "💰 Buyer", desc: "Purchase credits" },
-  { href: "/dashboard/admin", label: "⚙️ Admin", desc: "Platform admin" },
-  { href: "/dashboard/community", label: "🤝 Community", desc: "Local groups" },
+const allNavItems = [
+  { href: "/dashboard/owner", label: "🌱 Project Owner", desc: "Manage projects", role: "owner" },
+  { href: "/dashboard/verifier", label: "✅ Verifier", desc: "Review submissions", role: "verifier" },
+  { href: "/dashboard/buyer", label: "💰 Buyer", desc: "Purchase credits", role: "buyer" },
+  { href: "/dashboard/admin", label: "⚙️ Admin", desc: "Platform admin", role: "admin" },
 ];
 
 export default function DashboardLayout({
@@ -18,6 +18,32 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const savedRole = typeof window !== "undefined" ? window.localStorage.getItem("bc_role") : null;
+    setRole(savedRole);
+  }, []);
+
+  useEffect(() => {
+    if (!role) return;
+    const roleToPath: Record<string, string> = {
+      owner: "/dashboard/owner",
+      verifier: "/dashboard/verifier",
+      buyer: "/dashboard/buyer",
+      admin: "/dashboard/admin",
+    };
+    const expectedPrefix = roleToPath[role];
+    if (expectedPrefix && !pathname?.startsWith(expectedPrefix)) {
+      router.replace(expectedPrefix);
+    }
+  }, [role, pathname, router]);
+
+  const navItems = useMemo(() => {
+    if (!role) return [] as typeof allNavItems;
+    return allNavItems.filter((i) => i.role === role);
+  }, [role]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
@@ -64,6 +90,9 @@ export default function DashboardLayout({
                   </Link>
                 );
               })}
+              {!role && (
+                <div className="text-sm text-gray-600 px-4 py-3">Select a role on the sign-in page.</div>
+              )}
             </nav>
           </div>
         </aside>
