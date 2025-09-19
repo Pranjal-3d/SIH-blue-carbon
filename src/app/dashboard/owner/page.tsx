@@ -1,57 +1,59 @@
+import { Card, CardBody, CardHeader } from "@/components/ui/Card";
+import { StatCard } from "@/components/ui/StatCard";
+import { Button } from "@/components/ui/Button";
+import Link from "next/link";
+
 export default function OwnerDashboard() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-12 px-4">
-      <div className="max-w-4xl mx-auto space-y-8">
-        <h1 className="text-3xl font-bold text-gray-900">Project Owner Dashboard</h1>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="glass rounded-2xl p-6">
-            <h2 className="font-semibold mb-4 text-gray-900">My Projects</h2>
-            <ul className="text-gray-700 space-y-2">
-              <li>
-                Sundarbans Mangrove • <span className="text-amber-700 font-semibold">Pending verification</span>
-              </li>
-              <li>
-                Gulf of Mannar Seagrass • <span className="text-green-700 font-semibold">Approved</span>
-              </li>
-            </ul>
-          </div>
-
-          <div className="glass rounded-2xl p-6">
-            <h2 className="font-semibold mb-4 text-gray-900">Carbon Credits</h2>
-            <p className="text-gray-700">Minted: 12,000 • Pending: 3,400</p>
-          </div>
-        </div>
-
-        <div className="glass rounded-2xl p-6">
-          <h2 className="font-semibold mb-4 text-gray-900">Add New Project</h2>
-          <ol className="text-gray-700 grid md:grid-cols-3 gap-4 text-sm">
-            <li className="rounded-md border border-gray-300 p-4">Draw geo-boundary on map</li>
-            <li className="rounded-md border border-gray-300 p-4">Upload restoration plan</li>
-            <li className="rounded-md border border-gray-300 p-4">Submit for verification</li>
-          </ol>
-          <a
-            href="/dashboard/owner/add-project"
-            className="inline-flex items-center mt-6 rounded-xl bg-[var(--eco)] px-6 py-3 text-white font-semibold hover:brightness-110 transition"
-          >
-            Open Wizard
-          </a>
-        </div>
-
-        <div className="glass rounded-2xl p-6">
-          <h2 className="font-semibold mb-4 text-gray-900">Upload Evidence</h2>
-          <div className="grid md:grid-cols-3 gap-4 text-sm">
-            <button className="btn-outline rounded-xl py-3">Field Data Form</button>
-            <button className="btn-outline rounded-xl py-3">Upload Photos</button>
-            <button className="btn-outline rounded-xl py-3">Upload Drone Imagery</button>
-          </div>
-        </div>
-
-        <div className="glass rounded-2xl p-6">
-          <h2 className="font-semibold mb-4 text-gray-900">Impact Reports</h2>
-          <p className="text-gray-700">Download certificates and see before/after maps.</p>
-        </div>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-2xl font-semibold">Project Owner</h1>
+        <p className="text-sm text-gray-600">Create projects, upload evidence, track credits</p>
       </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <StatCard label="Projects" value="2" />
+        <StatCard label="Credits Minted" value="12,000" />
+        <StatCard label="Pending" value="3,400" />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader title="My Projects" subtitle="Status overview" />
+          <CardBody>
+            <ul className="text-sm text-gray-700 space-y-2">
+              <li>Sundarbans Mangrove • <span className="text-amber-700 font-medium">Pending verification</span></li>
+              <li>Gulf of Mannar Seagrass • <span className="text-green-700 font-medium">Approved</span></li>
+            </ul>
+          </CardBody>
+        </Card>
+        <Card>
+          <CardHeader title="Impact Reports" subtitle="Before/after maps and certificates" />
+          <CardBody>
+            <div className="text-sm text-gray-700">Download certificates and maps</div>
+          </CardBody>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader title="Add New Project" subtitle="Start the submission wizard" />
+        <CardBody>
+          <Link href="/dashboard/owner/add-project">
+            <Button>Open Wizard</Button>
+          </Link>
+        </CardBody>
+      </Card>
+
+      <Card>
+        <CardHeader title="Upload Evidence" subtitle="Forms and media" />
+        <CardBody>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/dashboard/owner/evidence/field-form"><Button variant="secondary">Field Data Form</Button></Link>
+            <Link href="/dashboard/owner/evidence/photos"><Button variant="secondary">Upload Photos</Button></Link>
+            <Link href="/dashboard/owner/evidence/drone"><Button variant="secondary">Upload Drone Imagery</Button></Link>
+          </div>
+        </CardBody>
+      </Card>
     </div>
   );
 }

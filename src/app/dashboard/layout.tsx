@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
 
+<<<<<<< HEAD
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -11,6 +12,19 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+=======
+import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
+import { Waves, ArrowLeft } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+
+const allNavItems = [
+  { href: "/dashboard/owner", label: "🌱 Project Owner", desc: "Manage projects", role: "owner" },
+  { href: "/dashboard/verifier", label: "✅ Verifier", desc: "Review submissions", role: "verifier" },
+  { href: "/dashboard/buyer", label: "💰 Buyer", desc: "Purchase credits", role: "buyer" },
+  { href: "/dashboard/admin", label: "⚙️ Admin", desc: "Platform admin", role: "admin" },
+];
+>>>>>>> e19f3b57632dd080b60abd29838080974ad1ae2b
 
 export const metadata: Metadata = {
   title: "Blue Carbon Registry",
@@ -21,7 +35,39 @@ export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
+<<<<<<< HEAD
 }>) {
+=======
+}) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const savedRole = typeof window !== "undefined" ? window.localStorage.getItem("bc_role") : null;
+    setRole(savedRole);
+  }, []);
+
+  useEffect(() => {
+    if (!role) return;
+    const roleToPath: Record<string, string> = {
+      owner: "/dashboard/owner",
+      verifier: "/dashboard/verifier",
+      buyer: "/dashboard/buyer",
+      admin: "/dashboard/admin",
+    };
+    const expectedPrefix = roleToPath[role];
+    if (expectedPrefix && !pathname?.startsWith(expectedPrefix)) {
+      router.replace(expectedPrefix);
+    }
+  }, [role, pathname, router]);
+
+  const navItems = useMemo(() => {
+    if (!role) return [] as typeof allNavItems;
+    return allNavItems.filter((i) => i.role === role);
+  }, [role]);
+
+>>>>>>> e19f3b57632dd080b60abd29838080974ad1ae2b
   return (
     <html lang="en">
       <body
@@ -90,6 +136,7 @@ export default function RootLayout({
               </div>
             </div>
 
+<<<<<<< HEAD
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="grid lg:grid-cols-2 gap-12 items-center">
                 {/* Left side - Newsletter */}
@@ -104,6 +151,34 @@ export default function RootLayout({
                     Get updates on new projects, carbon credit opportunities,
                     and ecosystem restoration insights delivered to your inbox.
                   </p>
+=======
+            <nav className="space-y-2">
+              {navItems.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`block rounded-xl px-4 py-3 font-medium text-sm transition-all ${
+                      isActive
+                        ? "bg-[var(--eco)] text-white shadow-lg"
+                        : "glass hover:bg-[var(--soft)] text-gray-700 hover:shadow-md"
+                    }`}
+                  >
+                    <div className="font-semibold">{item.label}</div>
+                    <div className={`text-xs ${isActive ? 'text-white/80' : 'text-gray-500'}`}>
+                      {item.desc}
+                    </div>
+                  </Link>
+                );
+              })}
+              {!role && (
+                <div className="text-sm text-gray-600 px-4 py-3">Select a role on the sign-in page.</div>
+              )}
+            </nav>
+          </div>
+        </aside>
+>>>>>>> e19f3b57632dd080b60abd29838080974ad1ae2b
 
                   <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto lg:mx-0">
                     <input
