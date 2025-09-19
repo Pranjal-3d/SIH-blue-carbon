@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Database, Blocks, Users, ScanLine, Leaf, Waves, Shield, Menu, X, ArrowRight, CheckCircle, Globe, Zap, TreePine, Heart, Award, TrendingUp, MapPin, Clock, DollarSign, Smartphone, Satellite, Camera, FileCheck, Coins, Building, Users2, Handshake, BarChart3 } from "lucide-react";
-import Link from "next/link";
 import ClientMap from "@/components/ClientMap";
 import { TimeSeries } from "@/components/TimeSeries";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
@@ -69,20 +68,20 @@ export default function BlueCarbonLanding() {
             </div>
 
             <div className="hidden md:flex space-x-8">
-              <a href="/" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">Home</a>
-              <a href="/projects" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">Projects</a>
-              <a href="/marketplace" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">Marketplace</a>
-              <a href="/about" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">About</a>
-              <a href="/mrv-system" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">MRV System</a>
+              {['Home', 'Projects', 'Marketplace', 'About', 'MRV System'].map((item) => (
+                <a key={item} href="#" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">
+                  {item}
+                </a>
+              ))}
             </div>
 
             <div className="hidden md:flex items-center space-x-4">
-              <Link href="/auth" className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+              <button className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                 Login
-              </Link>
-              <a href="/dashboard/Register" className="px-6 py-2 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg hover:shadow-lg transition-all">
+              </button>
+              <button className="px-6 py-2 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg hover:shadow-lg transition-all">
                 Register Project
-              </a>
+              </button>
             </div>
 
             <button 
@@ -98,16 +97,16 @@ export default function BlueCarbonLanding() {
         {isMenuOpen && (
           <div className="md:hidden bg-white border-t">
             <div className="px-2 pt-2 pb-3 space-y-1">
-              <a href="/" className="block px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-md">Home</a>
-              <a href="/projects" className="block px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-md">Projects</a>
-              <a href="/marketplace" className="block px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-md">Marketplace</a>
-              <a href="/about" className="block px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-md">About</a>
-              <a href="/mrv-system" className="block px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-md">MRV System</a>
-              <div className="pt-4 flex flex-col space-y-2">
-                <Link href="/auth" className="px-3 py-2 text-blue-600 text-left">Login</Link>
-                <a href="/dashboard/Register" className="px-3 py-2 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg">
-                  Register Project
+              {['Home', 'Projects', 'Marketplace', 'About', 'MRV System'].map((item) => (
+                <a key={item} href="#" className="block px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-md">
+                  {item}
                 </a>
+              ))}
+              <div className="pt-4 flex flex-col space-y-2">
+                <button className="px-3 py-2 text-blue-600 text-left">Login</button>
+                <button className="px-3 py-2 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg">
+                  Register Project
+                </button>
               </div>
             </div>
           </div>
@@ -136,14 +135,7 @@ export default function BlueCarbonLanding() {
               Monitoring, Reporting & Verification (MRV) system
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <a href="/auth" className="px-8 py-4 bg-white text-blue-600 rounded-xl font-semibold hover:shadow-xl transition-all glow group">
-                <span className="flex items-center justify-center">
-                  Get Started
-                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-2 transition-transform" />
-                </span>
-              </a>
-            </div>
+          
 
             {/* Floating Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto">
@@ -373,9 +365,9 @@ export default function BlueCarbonLanding() {
                 </div>
               </div>
               
-              <a href="/projects" className="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all">
+              <button className="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all">
                 View All Projects
-              </a>
+              </button>
             </div>
           </div>
         </div>
