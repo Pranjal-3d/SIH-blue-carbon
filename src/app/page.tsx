@@ -497,7 +497,7 @@ export default function BlueCarbonLanding() {
       </section>
 
       {/* Call to Action */}
-      <section className="py-24 bg-gradient-to-r from-blue-600 to-green-600">
+      {/* <section className="py-24 bg-gradient-to-r from-blue-600 to-green-600">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl sm:text-5xl font-bold text-white mb-8">
             Ready to Transform Blue Carbon Restoration?
@@ -511,7 +511,7 @@ export default function BlueCarbonLanding() {
             <a href="/projects" className="px-8 py-4 border-2 border-white text-white rounded-xl font-semibold hover:bg-white hover:text-blue-600 transition-all text-lg">Support a Project</a>
           </div>
         </div>
-      </section>
+      </section> */}
     </div>
   );
 }

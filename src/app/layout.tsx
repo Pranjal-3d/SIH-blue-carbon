@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -28,40 +29,76 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-gray-900`}
       >
         <div className="min-h-screen flex flex-col">
-          {/* Navbar
-          <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          {/* Glassy Transparent Navbar */}
+          <header className="fixed top-0 left-0 right-0 z-50 bg-white/5 backdrop-blur-xl border-b border-white/10 shadow-lg">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-transparent to-green-500/10"></div>
+            <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+              {/* Logo */}
               <a
                 href="/"
-                className="font-semibold tracking-tight text-lg text-[var(--primary)]"
+                className="font-bold tracking-tight text-lg text-white hover:text-blue-200 transition-all duration-300 flex items-center space-x-2 group"
               >
-                🌊 BlueCarbon Registry
+                <span className="text-2xl group-hover:scale-110 transition-transform">🌊</span>
+                <span className="bg-gradient-to-r from-blue-400 to-green-400 bg-clip-text text-transparent">
+                  BlueCarbon Registry
+                </span>
               </a>
-              <nav className="hidden md:flex items-center gap-6 text-sm text-slate-700">
-                <a href="/" className="hover:text-[var(--primary)]">
+
+              {/* Desktop Navigation */}
+              <nav className="hidden md:flex items-center gap-8 text-sm">
+                <a 
+                  href="/" 
+                  className="text-white/80 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-all duration-300 backdrop-blur-sm"
+                >
                   Home
                 </a>
-                <a href="/projects" className="hover:text-[var(--primary)]">
+                <a 
+                  href="/projects" 
+                  className="text-white/80 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-all duration-300 backdrop-blur-sm"
+                >
                   Projects
                 </a>
-                <a href="#how" className="hover:text-[var(--primary)]">
+                <a 
+                  href="#how" 
+                  className="text-white/80 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-all duration-300 backdrop-blur-sm"
+                >
                   How It Works
                 </a>
-                <a href="/marketplace" className="hover:text-[var(--primary)]">
+                <a 
+                  href="/marketplace" 
+                  className="text-white/80 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-all duration-300 backdrop-blur-sm"
+                >
                   Marketplace
                 </a>
-                <a href="/auth" className="hover:text-[var(--primary)]">
+                <a 
+                  href="/auth" 
+                  className="text-white/80 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-all duration-300 backdrop-blur-sm"
+                >
                   Login
                 </a>
               </nav>
+
+              {/* CTA Button */}
               <a
                 href="/auth"
-                className="rounded-xl px-4 py-2 text-sm font-medium shadow-md bg-[var(--eco)] text-white hover:brightness-105"
+                className="relative px-6 py-2.5 text-sm font-semibold rounded-xl overflow-hidden group"
               >
-                Get Started
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-green-500 opacity-80 group-hover:opacity-100 transition-opacity"></div>
+                <div className="absolute inset-0 bg-white/20 backdrop-blur-sm group-hover:bg-white/10 transition-colors"></div>
+                <span className="relative text-white drop-shadow-sm">Get Started</span>
               </a>
+
+              {/* Mobile Menu Button */}
+              <button className="md:hidden p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-300 backdrop-blur-sm">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
             </div>
-          </header> */}
+
+            {/* Subtle glow effect */}
+            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+          </header>
 
           {/* Main Content */}
           <main className="flex-1">{children}</main>
