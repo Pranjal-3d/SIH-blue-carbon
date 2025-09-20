@@ -10,6 +10,8 @@ import {
   Database, User, Mail, Phone, MapIcon, Layers, Briefcase
 } from "lucide-react";
 
+import { Web3Storage } from 'web3.storage';
+
 // Type definitions
 interface Particle {
   x: number;
@@ -31,6 +33,7 @@ interface Document {
   type: string;
   size: number;
   category: string;
+  ipfsHash?: string; // store hash here
 }
 
 interface FormData {
@@ -108,6 +111,8 @@ export default function ProjectRegistrationPage() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [loadingProjects, setLoadingProjects] = useState(false);
 
   const steps = [
     { title: "Project Basics", icon: <TreePine className="h-5 w-5" />, fields: 5 },
@@ -216,6 +221,8 @@ export default function ProjectRegistrationPage() {
 
   // Particle animation system
   useEffect(() => {
+
+
     const canvas = canvasRef.current;
     if (!canvas) return;
     
@@ -276,9 +283,27 @@ export default function ProjectRegistrationPage() {
     setIsVisible(true);
 
     // Generate project ID on initial load
-    if (!formData.projectId) {
-      setFormData(prev => ({ ...prev, projectId: generateProjectId() }));
+    const fetchProjects = async () => {
+    setLoadingProjects(true);
+    try {
+      const token = localStorage.getItem("bc_token"); // your bearer token
+      const res = await fetch("http://localhost:5000/api/projects/my-projects", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to fetch projects");
+      const data = await res.json();
+      setProjects(data.projects || []);
+      // Optionally pre-select first project if formData.projectId is empty
+      if (!formData.projectId && data.projects?.length > 0) {
+        setFormData(prev => ({ ...prev, projectId: data.projects[0]._id }));
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingProjects(false);
     }
+  };
+  fetchProjects();
   }, []);
 
   // Mouse tracking for interactive effects
@@ -317,6 +342,9 @@ export default function ProjectRegistrationPage() {
         }
       );
     }
+
+
+    
   };
 
   // Smart form suggestions
@@ -383,6 +411,40 @@ export default function ProjectRegistrationPage() {
       }));
     }
   };
+
+  // submit data
+  const handleSubmit = async () => {
+  try {
+    const token = localStorage.getItem("bc_token"); // replace "token" with your actual key
+    if (!token) {
+      alert("You must be logged in to submit a project.");
+      return;
+    }
+
+    const response = await fetch("http://localhost:5000/api/evidence", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}` // <-- attach Bearer token
+      },
+      body: JSON.stringify(formData),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      alert("Project registered successfully!");
+      console.log("Saved data:", data);
+    } else {
+      alert("Error saving project: " + data.message);
+    }
+  } catch (error) {
+    console.error("Error submitting project:", error);
+    alert("Something went wrong!");
+  }
+};
+
+
 
   // Effect to recalculate CO2 when relevant fields change
   useEffect(() => {
@@ -1145,7 +1207,7 @@ export default function ProjectRegistrationPage() {
                       <h3 className="text-2xl font-bold text-white mb-2">Ready to Submit?</h3>
                       <p className="text-white/70 mb-6">Your project will be reviewed by our verification team within 5-7 business days.</p>
                       
-                      <button className="px-8 py-4 bg-gradient-to-r from-blue-500 to-green-500 text-white rounded-xl font-semibold hover:scale-105 transition-all duration-300 flex items-center space-x-2 mx-auto">
+                      <button type="button" onClick={handleSubmit} className="px-8 py-4 bg-gradient-to-r from-blue-500 to-green-500 text-white rounded-xl font-semibold hover:scale-105 transition-all duration-300 flex items-center space-x-2 mx-auto">
                         <CheckCircle className="h-5 w-5" />
                         <span>Submit Project Registration</span>
                       </button>

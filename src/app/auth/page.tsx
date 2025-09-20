@@ -1,4 +1,5 @@
 "use client";
+import { jwtDecode } from "jwt-decode";
 
 import React, { useState, useEffect } from "react";
 import { Waves, Lock, Mail, Eye, EyeOff, Shield, UserCheck, Settings } from "lucide-react";
@@ -10,7 +11,7 @@ export default function ProfessionalLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [userRole, setUserRole] = useState("owner");
+  const [userRole, setUserRole] = useState("register");
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
@@ -25,6 +26,7 @@ export default function ProfessionalLoginPage() {
     }
     const roleToPath: Record<string, string> = {
       owner: "/dashboard/owner",
+      register: "/dashboard/Register",
       verifier: "/dashboard/verifier",
       buyer: "/dashboard/buyer",
       admin: "/dashboard/admin",
@@ -32,41 +34,75 @@ export default function ProfessionalLoginPage() {
     router.replace(roleToPath[role] ?? "/dashboard/owner");
   };
 
-  // Simple mock credentials per role (assume provided by admin in DB)
-  const credentialsByRole: Record<string, Array<{ email: string; password: string }>> = {
-    admin: [{ email: "admin@bluecarbon.gov", password: "Admin@123" }],
-    owner: [
-      { email: "owner1@example.com", password: "Owner@123" },
-      { email: "owner2@example.com", password: "Owner@123" },
-    ],
-    verifier: [
-      { email: "verifier@example.com", password: "Verify@123" },
-    ],
-    buyer: [
-      { email: "buyer@example.com", password: "Buyer@123" },
-    ],
-  };
+  // // Simple mock credentials per role (assume provided by admin in DB)
+  // const credentialsByRole: Record<string, Array<{ email: string; password: string }>> = {
+  //   admin: [{ email: "admin@bluecarbon.gov", password: "Admin@123" }],
+  //   owner: [
+  //     { email: "owner1@example.com", password: "Owner@123" },
+  //     { email: "owner2@example.com", password: "Owner@123" },
+  //   ],
+  //   verifier: [
+  //     { email: "verifier@example.com", password: "Verify@123" },
+  //   ],
+  //   buyer: [
+  //     { email: "buyer@example.com", password: "Buyer@123" },
+  //   ],
+  // };
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
+  type DecodedToken = {
+  id: string;
+  role: string;
+  name: string;
+  email: string;
+  iat: number;
+  exp: number;
+};
 
-    await new Promise((resolve) => setTimeout(resolve, 400));
+const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsLoading(true);
+  setError(null);
 
-    const allowed = credentialsByRole[userRole]?.some(
-      (c) => c.email.toLowerCase() === email.toLowerCase() && c.password === password
-    );
+  try {
+    const res = await fetch("http://localhost:5000/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
 
-    if (!allowed) {
+    const data = await res.json();
+
+    if (!res.ok) {
+      setError(data.message || "Login failed");
       setIsLoading(false);
-      setError("Invalid credentials for selected role");
       return;
     }
 
-    redirectToRoleDashboard(userRole);
+    // Decode JWT to get role from backend
+    const decoded: DecodedToken = jwtDecode(data.token);
+
+    let normalizedRole = decoded.role?.toLowerCase();
+    if (normalizedRole === "inspector") normalizedRole = "register";
+
+    const finalRole = normalizedRole || userRole;
+
+    // Save token & role
+    localStorage.setItem("bc_token", data.token);
+    localStorage.setItem("bc_role", finalRole);
+    localStorage.setItem("bc_id", decoded.id);
+
+    //  Redirect
+    redirectToRoleDashboard(normalizedRole ?? userRole);
+
+  } catch (err) {
+    console.error(err);
+    setError("Something went wrong. Please try again.");
+  } finally {
     setIsLoading(false);
-  };
+  }
+};
 
   const userRoles = [
     { id: "owner", label: "Project Owner", icon: Settings, description: "Create projects and upload evidence", color: "from-emerald-600 to-emerald-700" },
