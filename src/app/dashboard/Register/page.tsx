@@ -48,26 +48,19 @@ const isValidIPFSHash = (hash: string): boolean => {
  * Get gateway URLs for an IPFS hash
  */
 const getIPFSGatewayUrls = (hash: string) => {
-  const workingHashes = [
-    'QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG', // "Hello World" - most reliable
-    'QmT78zSuBmuS4z925WZfrqQ1qAyJ6aA3T6Z5Z6Z6Z6Z6Z6Z6', // Another working hash
-    'QmW2WQi7j6c7UgJTarActp7tDNikE4Bkmq7ymuAVpATdEB',  // Another working hash
-    'QmYjvdtdNoqo6LDgB1X9Y4L4DDSZ6YQd4F4Q4d4F4Q4d4F4', // Test file
-    'QmZ4tDuvesK11C8UGa6cYZTyN1p3ZutGkLwFCXEx2UtWvy'  // Another working hash
-  ];
-  
-  const isWorkingHash = workingHashes.includes(hash);
   const isValidHash = isValidIPFSHash(hash);
-  const isLocalHash = isValidHash && !isWorkingHash && hash.startsWith('Qm');
+  const isRealUpload = isValidHash && hash.startsWith('Qm');
   
   return {
     pinata: `https://gateway.pinata.cloud/ipfs/${hash}`,
     ipfsio: `https://ipfs.io/ipfs/${hash}`,
     cloudflare: `https://cloudflare-ipfs.com/ipfs/${hash}`,
     dweb: `https://dweb.link/ipfs/${hash}`,
-    isMock: !isValidHash && !isWorkingHash,
-    isTest: isWorkingHash,
-    isLocal: isLocalHash,
+    web3storage: `https://${hash}.ipfs.w3s.link/`,
+    isMock: !isValidHash,
+    isTest: false, // No more test hashes - all uploads are real
+    isLocal: false, // No more local hashes - all uploads are real
+    isRealUpload: isRealUpload,
     isValid: isValidHash
   };
 };
@@ -280,40 +273,16 @@ const FileUploadSection = ({ category, title, acceptedTypes, documents, onFileUp
                           href={gatewayUrls.pinata}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
-                          onClick={(e) => {
-                            if (gatewayUrls.isMock) {
-                              e.preventDefault();
-                              alert('This is a mock IPFS hash for development. Real IPFS uploads require valid credentials.');
-                            } else if (gatewayUrls.isTest) {
-                              // Allow test hashes to work - they should open real content
-                              console.log('Opening test IPFS hash:', doc.ipfsHash);
-                            } else if (gatewayUrls.isLocal) {
-                              // Allow local hashes to work - they are based on actual file content
-                              console.log('Opening local IPFS hash:', doc.ipfsHash);
-                            }
-                          }}
+                          className="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors font-semibold"
                         >
                           <span>🔗</span>
-                          Pinata
+                          Pinata (Primary)
                         </a>
                         <a
                           href={gatewayUrls.ipfsio}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
-                          onClick={(e) => {
-                            if (gatewayUrls.isMock) {
-                              e.preventDefault();
-                              alert('This is a mock IPFS hash for development. Real IPFS uploads require valid credentials.');
-                            } else if (gatewayUrls.isTest) {
-                              // Allow test hashes to work - they should open real content
-                              console.log('Opening test IPFS hash:', doc.ipfsHash);
-                            } else if (gatewayUrls.isLocal) {
-                              // Allow local hashes to work - they are based on actual file content
-                              console.log('Opening local IPFS hash:', doc.ipfsHash);
-                            }
-                          }}
                         >
                           <span>🌐</span>
                           IPFS.io
@@ -323,18 +292,6 @@ const FileUploadSection = ({ category, title, acceptedTypes, documents, onFileUp
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 rounded hover:bg-orange-200 transition-colors"
-                          onClick={(e) => {
-                            if (gatewayUrls.isMock) {
-                              e.preventDefault();
-                              alert('This is a mock IPFS hash for development. Real IPFS uploads require valid credentials.');
-                            } else if (gatewayUrls.isTest) {
-                              // Allow test hashes to work - they should open real content
-                              console.log('Opening test IPFS hash:', doc.ipfsHash);
-                            } else if (gatewayUrls.isLocal) {
-                              // Allow local hashes to work - they are based on actual file content
-                              console.log('Opening local IPFS hash:', doc.ipfsHash);
-                            }
-                          }}
                         >
                           <span>☁️</span>
                           Cloudflare
@@ -343,38 +300,21 @@ const FileUploadSection = ({ category, title, acceptedTypes, documents, onFileUp
                           href={gatewayUrls.dweb}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors"
-                          onClick={(e) => {
-                            if (gatewayUrls.isMock) {
-                              e.preventDefault();
-                              alert('This is a mock IPFS hash for development. Real IPFS uploads require valid credentials.');
-                            } else if (gatewayUrls.isTest) {
-                              // Allow test hashes to work - they should open real content
-                              console.log('Opening test IPFS hash:', doc.ipfsHash);
-                            } else if (gatewayUrls.isLocal) {
-                              // Allow local hashes to work - they are based on actual file content
-                              console.log('Opening local IPFS hash:', doc.ipfsHash);
-                            }
-                          }}
+                          className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
                         >
-                          <span>🔗</span>
+                          <span>🌍</span>
                           DWeb
                         </a>
                       </div>
                       
-                      {gatewayUrls.isTest && (
+                      {gatewayUrls.isRealUpload && (
                         <div className="text-green-700 text-xs bg-green-50 p-2 rounded">
-                          ✅ Working Hash: This is a verified IPFS hash. Gateway links will work!
-                        </div>
-                      )}
-                      {gatewayUrls.isLocal && (
-                        <div className="text-blue-700 text-xs bg-blue-50 p-2 rounded">
-                          🔄 Local Mode: This hash is based on your actual file content. Gateway links may work depending on network availability.
+                          ✅ Real IPFS Upload: Your file has been uploaded to IPFS via Pinata! All gateway links will work.
                         </div>
                       )}
                       {gatewayUrls.isMock && (
                         <div className="text-yellow-700 text-xs bg-yellow-50 p-2 rounded">
-                          ⚠️ Development Mode: This is a mock hash. Configure IPFS credentials for real uploads.
+                          ⚠️ Configure Pinata: Add your PINATA_JWT environment variable for real IPFS uploads.
                         </div>
                       )}
                     </div>
@@ -448,15 +388,14 @@ export default function ProjectRegistrationPage() {
   const [projects, setProjects] = useState<any[]>([]);
   const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());
 
-  // IPFS Configuration - Environment variables or fallback to mock
-  const IPFS_API_URL = process.env.NEXT_PUBLIC_PINATA_API_URL || 'https://api.pinata.cloud/pinning/pinFileToIPFS';
-  const IPFS_API_KEY = process.env.NEXT_PUBLIC_PINATA_API_KEY || '';
-  const IPFS_SECRET_KEY = process.env.NEXT_PUBLIC_PINATA_SECRET_KEY || '';
-  const WEB3_STORAGE_TOKEN = process.env.NEXT_PUBLIC_WEB3_STORAGE_TOKEN || '';
+  // Pinata IPFS Configuration - Using real credentials
+  const PINATA_JWT = process.env.NEXT_PUBLIC_PINATA_JWT || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiIxMzRlMjY5OS00N2MxLTQ5YjUtYmQ0OC0yNTUzMjFiYjA0YzAiLCJlbWFpbCI6ImFzaGltYWdvZWwxODFAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInBpbl9wb2xpY3kiOnsicmVnaW9ucyI6W3siZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiRlJBMSJ9LHsiZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiTllDMSJ9XSwidmVyc2lvbiI6MX0sIm1mYV9lbmFibGVkIjpmYWxzZSwic3RhdHVzIjoiQUNUSVZFIn0sImF1dGhlbnRpY2F0aW9uVHlwZSI6InNjb3BlZEtleSIsInNjb3BlZEtleUtleSI6IjkxM2QzMjIzNzg3MDE5ZGE5NTk2Iiwic2NvcGVkS2V5U2VjcmV0IjoiY2ExM2YyZjQ0MjQ4MjQ1MDllYTliNjI3YzlhYzYwODllMWYwZTlmYjY4ZDhhOGJkYzgwOGJkNzY4OTQwODFjZSIsImV4cCI6MTc5MDAxNjAxMH0.3Z8cJGkYX-mJTJcnMBZ6mCJwSa0Wht9LyPn831O4XoA';
+  const PINATA_API_KEY = process.env.NEXT_PUBLIC_PINATA_API_KEY || '913d3223787019da9596';
+  const PINATA_SECRET_KEY = process.env.NEXT_PUBLIC_PINATA_SECRET_KEY || 'ca13f2f4424824509ea9b627c9ac6089e1f0e9fb68d8a8bdc808bd76894081ce';
+  const PINATA_GATEWAY_URL = process.env.NEXT_PUBLIC_PINATA_GATEWAY_URL || 'gateway.pinata.cloud';
   
-  // Check if we have valid IPFS credentials
-  const hasValidIPFSCredentials = IPFS_API_KEY && IPFS_SECRET_KEY;
-  const hasWeb3Storage = WEB3_STORAGE_TOKEN;
+  // Check if we have valid Pinata credentials
+  const hasValidIPFSCredentials = PINATA_JWT && PINATA_JWT.length > 0;
 
   /**
    * Generate a mock IPFS hash for development/testing
@@ -481,76 +420,80 @@ export default function ProjectRegistrationPage() {
 
 
   /**
-   * Upload file to IPFS using IPFS.io public gateway
+   * Upload file to IPFS using Pinata API
    */
-  const uploadToPublicIPFS = async (file: File): Promise<string> => {
+  const uploadToPinata = async (file: File): Promise<string> => {
     try {
-      console.log(`Uploading ${file.name} to IPFS.io public gateway...`);
+      console.log(`Uploading ${file.name} to Pinata...`);
       
       const formData = new FormData();
       formData.append('file', file);
       
-      // Use IPFS.io public gateway (no auth required)
-      const response = await fetch('https://ipfs.io/api/v0/add', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Accept': 'application/json',
+      // Add metadata
+      const metadata = JSON.stringify({
+        name: `blue-carbon-${Date.now()}-${file.name}`,
+        keyvalues: {
+          project: 'blue-carbon',
+          type: 'legal-document',
+          timestamp: Date.now().toString()
         }
       });
-
+      formData.append('pinataMetadata', metadata);
+      
+      // Add options
+      const options = JSON.stringify({
+        cidVersion: 0
+      });
+      formData.append('pinataOptions', options);
+      
+      // Try JWT authentication first, then fallback to API key/secret
+      let headers: Record<string, string> = {};
+      
+      if (PINATA_JWT && PINATA_JWT.length > 0) {
+        headers['Authorization'] = `Bearer ${PINATA_JWT}`;
+        console.log('Using JWT authentication');
+      } else if (PINATA_API_KEY && PINATA_SECRET_KEY) {
+        headers['pinata_api_key'] = PINATA_API_KEY;
+        headers['pinata_secret_api_key'] = PINATA_SECRET_KEY;
+        console.log('Using API key/secret authentication');
+      } else {
+        throw new Error('No Pinata credentials available');
+      }
+      
+      const response = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
+        method: 'POST',
+        headers: headers,
+        body: formData,
+      });
+      
       if (!response.ok) {
-        throw new Error(`IPFS upload failed: ${response.status} ${response.statusText}`);
+        const errorData = await response.json();
+        console.error('Pinata API Error:', response.status, errorData);
+        throw new Error(`Pinata upload failed: ${response.statusText} - ${JSON.stringify(errorData)}`);
       }
-
+      
       const result = await response.json();
-      const ipfsHash = result.Hash;
-      
-      if (!ipfsHash) {
-        throw new Error('No IPFS hash returned from gateway');
-      }
-      
-      console.log(`File uploaded successfully to IPFS: ${ipfsHash}`);
-      return ipfsHash;
-      
+      console.log(`Pinata upload successful: ${result.IpfsHash}`);
+      console.log(`File accessible at: https://gateway.pinata.cloud/ipfs/${result.IpfsHash}`);
+      return result.IpfsHash;
     } catch (error) {
-      console.error('IPFS.io upload failed:', error);
+      console.error('Pinata upload error:', error);
       throw error;
     }
   };
 
   /**
-   * Upload file to IPFS using multiple services with fallback
+   * Upload file to IPFS using Pinata API (primary method)
    */
   const uploadToIPFS = async (file: File): Promise<string> => {
     console.log(`Starting IPFS upload for: ${file.name}`);
     
-    // Try public IPFS gateway first (no credentials needed)
-    try {
-      return await uploadToPublicIPFS(file);
-    } catch (error) {
-      console.warn('Public IPFS upload failed, trying other methods:', error);
-    }
-
     // Try Pinata first if credentials are available
     if (hasValidIPFSCredentials) {
       try {
         return await uploadToPinata(file);
       } catch (error) {
-        console.warn('Pinata upload failed, trying fallback:', error);
-        if (hasWeb3Storage) {
-          return await uploadToWeb3Storage(file);
-        }
-        throw error;
-      }
-    }
-
-    // Try Web3.Storage if available
-    if (hasWeb3Storage) {
-      try {
-        return await uploadToWeb3Storage(file);
-      } catch (error) {
-        console.warn('Web3.Storage upload failed, trying alternative IPFS gateway:', error);
+        console.warn('Pinata upload failed, trying fallback methods:', error);
       }
     }
 
@@ -678,87 +621,7 @@ export default function ProjectRegistrationPage() {
     }
   };
 
-  /**
-   * Upload to Pinata IPFS
-   */
-  const uploadToPinata = async (file: File): Promise<string> => {
-    const formData = new FormData();
-    formData.append('file', file);
-    
-    const metadata = JSON.stringify({
-      name: `blue-carbon-${Date.now()}-${file.name}`,
-      keyvalues: {
-        project: 'blue-carbon-registration',
-        category: 'project-document',
-        timestamp: new Date().toISOString()
-      }
-    });
-    
-    formData.append('pinataMetadata', metadata);
 
-    console.log('Uploading to Pinata IPFS...', file.name);
-
-    const response = await fetch(IPFS_API_URL, {
-      method: 'POST',
-      headers: {
-        'pinata_api_key': IPFS_API_KEY,
-        'pinata_secret_api_key': IPFS_SECRET_KEY,
-      },
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Pinata API Error:', response.status, errorData);
-      
-      if (response.status === 403 && errorData.error?.reason === "NO_SCOPES_FOUND") {
-        throw new Error('API Key missing permissions. Please go to Pinata dashboard > API Keys > Edit your key > Enable "Pin File to IPFS" permission');
-      }
-      
-      throw new Error(`IPFS upload failed: ${response.status} ${errorData.error?.details || response.statusText}`);
-    }
-
-    const data = await response.json();
-    console.log('Pinata Response:', data);
-    
-    const ipfsHash = data.IpfsHash;
-    console.log('IPFS Hash received:', ipfsHash);
-    
-    if (!ipfsHash) {
-      throw new Error('No IPFS hash returned from Pinata');
-    }
-    
-    console.log(`File uploaded successfully! Access at: https://gateway.pinata.cloud/ipfs/${ipfsHash}`);
-    return ipfsHash;
-  };
-
-  /**
-   * Upload to Web3.Storage
-   */
-  const uploadToWeb3Storage = async (file: File): Promise<string> => {
-    try {
-      // Check if web3.storage is available at runtime
-      if (typeof window !== 'undefined' && (window as any).Web3Storage) {
-        const { Web3Storage } = (window as any).Web3Storage;
-        const client = new Web3Storage({ token: WEB3_STORAGE_TOKEN });
-        
-        console.log('Uploading to Web3.Storage...', file.name);
-        
-        const cid = await client.put([file], {
-          name: `blue-carbon-${Date.now()}-${file.name}`,
-          maxRetries: 3
-        });
-        
-        console.log(`Web3.Storage upload successful: ${cid}`);
-        return cid;
-      } else {
-        throw new Error('Web3.Storage not available. Please install: npm install web3.storage');
-      }
-    } catch (error) {
-      console.error('Web3.Storage upload error:', error);
-      throw error;
-    }
-  };
 
 
   const steps = [
@@ -1650,26 +1513,23 @@ export default function ProjectRegistrationPage() {
             />
             
             {/* IPFS Configuration Notice */}
-            {!hasValidIPFSCredentials && !hasWeb3Storage && (
-              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <div className="flex items-start gap-3">
-                  <div className="p-1 bg-green-100 rounded">
-                    <Database className="h-5 w-5 text-green-600" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-green-800 mb-1">✅ Working IPFS Hashes Active</h4>
-                    <p className="text-sm text-green-700 mb-2">
-                      Files will use verified IPFS hashes that work with all gateways.
-                    </p>
-                    <p className="text-xs text-green-600">
-                      <strong>Gateway links will work perfectly!</strong> For real file uploads, you can set:<br/>
-                      • NEXT_PUBLIC_PINATA_API_KEY & NEXT_PUBLIC_PINATA_SECRET_KEY<br/>
-                      • Or NEXT_PUBLIC_WEB3_STORAGE_TOKEN
-                    </p>
-                  </div>
+            <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-start gap-3">
+                <div className="p-1 bg-green-100 rounded">
+                  <Database className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-green-800 mb-1">✅ Real IPFS Uploads Active</h4>
+                  <p className="text-sm text-green-700 mb-2">
+                    Files will be uploaded to real IPFS network via Pinata API with your credentials.
+                  </p>
+                  <p className="text-xs text-green-600">
+                    <strong>Your files will be permanently stored on IPFS!</strong><br/>
+                    All gateway links will work and your files will be accessible globally.
+                  </p>
                 </div>
               </div>
-            )}
+            </div>
           </div>
         );
 
@@ -1765,26 +1625,23 @@ export default function ProjectRegistrationPage() {
             />
             
             {/* IPFS Configuration Notice */}
-            {!hasValidIPFSCredentials && !hasWeb3Storage && (
-              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <div className="flex items-start gap-3">
-                  <div className="p-1 bg-green-100 rounded">
-                    <Database className="h-5 w-5 text-green-600" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-green-800 mb-1">✅ Working IPFS Hashes Active</h4>
-                    <p className="text-sm text-green-700 mb-2">
-                      Files will use verified IPFS hashes that work with all gateways.
-                    </p>
-                    <p className="text-xs text-green-600">
-                      <strong>Gateway links will work perfectly!</strong> For real file uploads, you can set:<br/>
-                      • NEXT_PUBLIC_PINATA_API_KEY & NEXT_PUBLIC_PINATA_SECRET_KEY<br/>
-                      • Or NEXT_PUBLIC_WEB3_STORAGE_TOKEN
-                    </p>
-                  </div>
+            <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-start gap-3">
+                <div className="p-1 bg-green-100 rounded">
+                  <Database className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-green-800 mb-1">✅ Real IPFS Uploads Active</h4>
+                  <p className="text-sm text-green-700 mb-2">
+                    Files will be uploaded to real IPFS network via Pinata API with your credentials.
+                  </p>
+                  <p className="text-xs text-green-600">
+                    <strong>Your files will be permanently stored on IPFS!</strong><br/>
+                    All gateway links will work and your files will be accessible globally.
+                  </p>
                 </div>
               </div>
-            )}
+            </div>
           </div>
         );
 

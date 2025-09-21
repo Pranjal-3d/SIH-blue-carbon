@@ -5,7 +5,7 @@ import { Database, Blocks, Users, ScanLine, Leaf, Waves, Shield, Menu, X, ArrowR
 import ClientMap from "@/components/ClientMap";
 import { TimeSeries } from "@/components/TimeSeries";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
-import { Link } from 'lucide-react';
+import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 
 export default function BlueCarbonLanding() {
@@ -332,9 +332,11 @@ export default function BlueCarbonLanding() {
                 </div>
               </div>
               
-              <button className="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all">
-                View All Projects
-              </button>
+              <Link href="/projects" className="block w-full">
+                <button className="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all">
+                  View All Projects
+                </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -464,7 +466,7 @@ export default function BlueCarbonLanding() {
       </section>
 
       {/* Call to Action */}
-      {/* <section className="py-24 bg-gradient-to-r from-blue-600 to-green-600">
+      <section className="py-24 bg-gradient-to-r from-blue-600 to-green-600">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl sm:text-5xl font-bold text-white mb-8">
             Ready to Transform Blue Carbon Restoration?
@@ -474,11 +476,15 @@ export default function BlueCarbonLanding() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <a href="/dashboard/owner/add-project" className="px-8 py-4 bg-white text-blue-600 rounded-xl font-semibold hover:shadow-xl transition-all glow text-lg">Register a Project</a>
-            <a href="/projects" className="px-8 py-4 border-2 border-white text-white rounded-xl font-semibold hover:bg-white hover:text-blue-600 transition-all text-lg">Support a Project</a>
+            <Link href="/dashboard/Register" className="px-8 py-4 bg-white text-blue-600 rounded-xl font-semibold hover:shadow-xl transition-all glow text-lg">
+              Register a Project
+            </Link>
+            <Link href="/projects" className="px-8 py-4 border-2 border-white text-white rounded-xl font-semibold hover:bg-white hover:text-blue-600 transition-all text-lg">
+              Support a Project
+            </Link>
           </div>
         </div>
-      </section> */}
+      </section>
     </div>
   );
 }

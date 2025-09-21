@@ -23,6 +23,8 @@ const allNavItems = [
   { href: "/dashboard/verifier", label: "✅ Verifier", desc: "Review submissions", role: "verifier" },
   { href: "/dashboard/buyer", label: "💰 Buyer", desc: "Purchase credits", role: "buyer" },
   { href: "/dashboard/admin", label: "⚙️ Admin", desc: "Platform admin", role: "admin" },
+  { href: "/dashboard/Register", label: "📝 Register Project", desc: "Register new projects", role: "register" },
+  { href: "/dashboard/community", label: "👥 Community", desc: "Community dashboard", role: "community" },
 ];
 
 export default function RootLayout({
@@ -39,21 +41,23 @@ export default function RootLayout({
     setRole(savedRole);
   }, []);
 
-  useEffect(() => {
-    if (!role) return;
-    const roleToPath: Record<string, string> = {
-      owner: "/dashboard/owner",
-      verifier: "/dashboard/verifier",
-      buyer: "/dashboard/buyer",
-      admin: "/dashboard/admin",
-    };
-    const expectedPrefix = roleToPath[role];
-    if (expectedPrefix && !pathname?.startsWith(expectedPrefix)) {
-      router.replace(expectedPrefix);
-    }
-  }, [role, pathname, router]);
+  // Remove automatic redirection - allow users to navigate between dashboards
+  // useEffect(() => {
+  //   if (!role) return;
+  //   const roleToPath: Record<string, string> = {
+  //     owner: "/dashboard/owner",
+  //     verifier: "/dashboard/verifier",
+  //     buyer: "/dashboard/buyer",
+  //     admin: "/dashboard/admin",
+  //   };
+  //   const expectedPrefix = roleToPath[role];
+  //   if (expectedPrefix && !pathname?.startsWith(expectedPrefix)) {
+  //     router.replace(expectedPrefix);
+  //   }
+  // }, [role, pathname, router]);
 
   const navItems = useMemo(() => {
+    // Show only the user's assigned role dashboard
     if (!role) return [] as typeof allNavItems;
     return allNavItems.filter((i) => i.role === role);
   }, [role]);

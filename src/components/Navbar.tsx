@@ -126,7 +126,7 @@ export default function Navbar() {
                   Login
                 </Link>
                 <Link
-                  href="/register-project"
+                  href="/dashboard/Register"
                   onClick={handleMobileNavClick}
                   className="px-3 py-2 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg text-center hover:shadow-lg transition-all"
                 >
