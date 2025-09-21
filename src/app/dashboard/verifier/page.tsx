@@ -5,22 +5,98 @@ import {
   CheckCircle, XCircle, Clock, Eye, Search, Filter,
   MapPin, Calendar, User, FileText, Camera, Globe,
   TrendingUp, Award, AlertTriangle, BarChart3, Zap,
-  ArrowRight, Download, MessageSquare, Star
+  ArrowRight, Download, MessageSquare, Star, RefreshCw,
+  Database, ExternalLink, CheckSquare, XSquare
 } from "lucide-react";
 import Link from "next/link";
+
+interface Project {
+  _id: string;
+  projectId: string;
+}
+
+interface ProjectDetails {
+  _id: string;
+  projectId: string;
+  timestampISO: string;
+  gps: {
+    latitude: number;
+    longitude: number;
+    precision: number;
+    _id: string;
+  };
+  photos: string[];
+  videos: string[];
+  ecosystemType: string;
+  soilCores: Array<{
+    _id: string;
+    depth_cm: number;
+    carbon_kg: number;
+  }>;
+  co2Estimate: number;
+  evidenceHash: string;
+  status: string;
+  submittedAt: string;
+  __v: number;
+}
 
 export default function VerifierDashboard() {
   const [isVisible, setIsVisible] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState('all');
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [selectedProject, setSelectedProject] = useState<ProjectDetails | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setIsVisible(true);
+    fetchPendingProjects();
   }, []);
+
+  const fetchPendingProjects = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('http://localhost:5000/api/projects/allID');
+      const data = await response.json();
+      
+      if (data.success) {
+        setProjects(data.data);
+      } else {
+        setError('Failed to fetch projects');
+      }
+    } catch (err) {
+      setError('Error connecting to backend');
+      console.error('Error fetching projects:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchProjectDetails = async (projectId: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`http://localhost:5000/api/projects/${projectId}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        setSelectedProject(data.project);
+      } else {
+        setError('Failed to fetch project details');
+      }
+    } catch (err) {
+      setError('Error fetching project details');
+      console.error('Error fetching project details:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const stats = [
     {
       label: "Pending Review",
-      value: "2",
+      value: projects.length.toString(),
       icon: <Clock className="h-6 w-6" />,
       color: "from-amber-500 to-orange-600",
       bgColor: "from-amber-50 to-orange-50",
@@ -44,44 +120,19 @@ export default function VerifierDashboard() {
     }
   ];
 
-  const verificationQueue = [
-    {
-      id: "BC-2024-001",
-      name: "Sundarbans Mangrove Restoration",
-      organization: "Coastal Conservation Foundation",
-      location: "West Bengal, India",
-      submittedDate: "2024-01-15",
-      status: "pending",
-      priority: "high",
-      evidenceCount: 12,
-      credits: "8,500 tCO₂e",
-      lastActivity: "2 hours ago"
-    },
-    {
-      id: "BC-2024-002",
-      name: "Gulf of Mannar Seagrass Beds",
-      organization: "Marine Restoration Society",
-      location: "Tamil Nadu, India",
-      submittedDate: "2024-01-12",
-      status: "additional_data",
-      priority: "medium",
-      evidenceCount: 8,
-      credits: "3,500 tCO₂e",
-      lastActivity: "1 day ago"
-    },
-    {
-      id: "BC-2024-003",
-      name: "Kutch Salt Marsh Project",
-      organization: "Blue Ocean Initiative",
-      location: "Gujarat, India",
-      submittedDate: "2024-01-10",
-      status: "pending",
-      priority: "low",
-      evidenceCount: 15,
-      credits: "12,000 tCO₂e",
-      lastActivity: "3 days ago"
-    }
-  ];
+  // Dynamic verification queue based on backend data
+  const verificationQueue = projects.map(project => ({
+    id: project.projectId,
+    name: `${project.projectId} Project`,
+    organization: "Project Owner",
+    location: "Location TBD",
+    submittedDate: "2024-01-15",
+    status: "pending",
+    priority: "high",
+    evidenceCount: 0,
+    credits: "TBD tCO₂e",
+    lastActivity: "Just now"
+  }));
 
   const recentDecisions = [
     {
@@ -140,9 +191,28 @@ export default function VerifierDashboard() {
           <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
             Verifier Dashboard
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-6">
             Review project submissions and validate carbon credit claims
           </p>
+          
+          {/* MRV System Button */}
+          <div className="flex justify-center space-x-4">
+            <Link href="/mrv-system">
+              <button className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-2">
+                <Database className="h-5 w-5" />
+                <span>MRV System</span>
+                <ExternalLink className="h-4 w-4" />
+              </button>
+            </Link>
+            <button 
+              onClick={fetchPendingProjects}
+              disabled={loading}
+              className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-2 disabled:opacity-50"
+            >
+              <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
+              <span>Refresh Projects</span>
+            </button>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -166,6 +236,11 @@ export default function VerifierDashboard() {
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Verification Queue</h2>
               <p className="text-gray-600">Projects awaiting your expert review</p>
+              {error && (
+                <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-700 text-sm">{error}</p>
+                </div>
+              )}
             </div>
             <div className="flex items-center space-x-3">
               <div className="flex items-center space-x-2">
@@ -230,19 +305,20 @@ export default function VerifierDashboard() {
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <Link href={`/dashboard/verifier/queue/${project.id}`}>
-                      <button className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-2">
-                        <Eye className="h-4 w-4" />
-                        <span>Review</span>
-                      </button>
-                    </Link>
+                    <button 
+                      onClick={() => fetchProjectDetails(project.id)}
+                      className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-2"
+                    >
+                      <Eye className="h-4 w-4" />
+                      <span>View Details</span>
+                    </button>
                     <div className="flex space-x-2">
                       <button className="px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-1">
-                        <CheckCircle className="h-4 w-4" />
+                        <CheckSquare className="h-4 w-4" />
                         <span className="text-sm">Approve</span>
                       </button>
                       <button className="px-3 py-2 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-1">
-                        <XCircle className="h-4 w-4" />
+                        <XSquare className="h-4 w-4" />
                         <span className="text-sm">Reject</span>
                       </button>
                     </div>
@@ -252,6 +328,97 @@ export default function VerifierDashboard() {
             ))}
           </div>
         </div>
+
+        {/* Project Details Modal */}
+        {selectedProject && (
+          <div className={`bg-white/70 backdrop-blur-sm border border-white/50 rounded-3xl p-8 shadow-xl transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Project Details</h2>
+                <p className="text-gray-600">Detailed information for {selectedProject.projectId}</p>
+              </div>
+              <button 
+                onClick={() => setSelectedProject(null)}
+                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Basic Information */}
+              <div className="space-y-4">
+                <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-4">
+                  <h3 className="font-semibold text-blue-900 mb-3">Basic Information</h3>
+                  <div className="space-y-2 text-sm">
+                    <div><span className="font-medium">Project ID:</span> {selectedProject.projectId}</div>
+                    <div><span className="font-medium">Ecosystem Type:</span> {selectedProject.ecosystemType}</div>
+                    <div><span className="font-medium">Status:</span> <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded-full text-xs">{selectedProject.status}</span></div>
+                    <div><span className="font-medium">Submitted:</span> {new Date(selectedProject.submittedAt).toLocaleDateString()}</div>
+                  </div>
+                </div>
+
+                {/* GPS Location */}
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4">
+                  <h3 className="font-semibold text-green-900 mb-3">Location</h3>
+                  <div className="space-y-2 text-sm">
+                    <div><span className="font-medium">Latitude:</span> {selectedProject.gps.latitude}</div>
+                    <div><span className="font-medium">Longitude:</span> {selectedProject.gps.longitude}</div>
+                    <div><span className="font-medium">Precision:</span> {selectedProject.gps.precision}m</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Evidence & Data */}
+              <div className="space-y-4">
+                {/* Photos */}
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-4">
+                  <h3 className="font-semibold text-purple-900 mb-3">Evidence Files</h3>
+                  <div className="space-y-2 text-sm">
+                    <div><span className="font-medium">Photos:</span> {selectedProject.photos.length} files</div>
+                    <div><span className="font-medium">Videos:</span> {selectedProject.videos.length} files</div>
+                    <div><span className="font-medium">Evidence Hash:</span> <code className="text-xs bg-gray-100 px-1 rounded">{selectedProject.evidenceHash.slice(0, 20)}...</code></div>
+                  </div>
+                </div>
+
+                {/* Carbon Data */}
+                <div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-xl p-4">
+                  <h3 className="font-semibold text-orange-900 mb-3">Carbon Estimation</h3>
+                  <div className="space-y-2 text-sm">
+                    <div><span className="font-medium">CO₂ Estimate:</span> {selectedProject.co2Estimate} tCO₂e</div>
+                    <div><span className="font-medium">Soil Cores:</span> {selectedProject.soilCores.length} samples</div>
+                    {selectedProject.soilCores.length > 0 && (
+                      <div className="mt-2">
+                        <div className="text-xs font-medium text-gray-600 mb-1">Soil Core Details:</div>
+                        {selectedProject.soilCores.map((core, index) => (
+                          <div key={index} className="text-xs bg-white p-2 rounded border">
+                            Depth: {core.depth_cm}cm, Carbon: {core.carbon_kg}kg
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="mt-6 flex justify-center space-x-4">
+              <button className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-2">
+                <CheckSquare className="h-5 w-5" />
+                <span>Approve Project</span>
+              </button>
+              <button className="px-6 py-3 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-2">
+                <XSquare className="h-5 w-5" />
+                <span>Reject Project</span>
+              </button>
+              <button className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-2">
+                <MessageSquare className="h-5 w-5" />
+                <span>Request More Data</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Bottom Section */}
         <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 transform transition-all duration-1000 delay-600 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
