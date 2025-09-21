@@ -5,10 +5,21 @@ import { Database, Blocks, Users, ScanLine, Leaf, Waves, Shield, Menu, X, ArrowR
 import ClientMap from "@/components/ClientMap";
 import { TimeSeries } from "@/components/TimeSeries";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
+import { Link } from 'lucide-react';
+import Navbar from '@/components/Navbar';
 
 export default function BlueCarbonLanding() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrollY, setScrollY] = useState(0);
+  const [currentPage, setCurrentPage] = useState('Home');
+
+  const navItems = [
+    { label: "Home", href: "/" },
+    { label: "Projects", href: "/projects" },
+    { label: "Marketplace", href: "/marketplace" },
+    { label: "About", href: "/about" },
+    { label: "MRV System", href: "/mrv" },
+  ];
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
@@ -16,8 +27,15 @@ export default function BlueCarbonLanding() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const handleNavigation = (label, href) => {
+    setCurrentPage(label);
+    setIsMenuOpen(false);
+    // In a real app, you'd use Next.js router or React Router here
+    console.log(`Navigating to: ${href}`);
+  };
+
   return (
-    <div className="bg-white overflow-x-hidden">
+    <div className="bg-white overflow-x-hidden min-h-screen">
       <style jsx>{`
         .gradient-bg {
           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -52,66 +70,15 @@ export default function BlueCarbonLanding() {
           transform: translateY(-10px);
           box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         }
+        .gradient-text {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
       `}</style>
 
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200">
-        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-green-500 rounded-lg flex items-center justify-center">
-                <Waves className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-xl font-bold gradient-text bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
-                BlueCarbon
-              </span>
-            </div>
-
-            <div className="hidden md:flex space-x-8">
-              {['Home', 'Projects', 'Marketplace', 'About', 'MRV System'].map((item) => (
-                <a key={item} href="#" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">
-                  {item}
-                </a>
-              ))}
-            </div>
-
-            <div className="hidden md:flex items-center space-x-4">
-              <button className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                Login
-              </button>
-              <button className="px-6 py-2 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg hover:shadow-lg transition-all">
-                Register Project
-              </button>
-            </div>
-
-            <button 
-              className="md:hidden"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-          </div>
-        </nav>
-
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden bg-white border-t">
-            <div className="px-2 pt-2 pb-3 space-y-1">
-              {['Home', 'Projects', 'Marketplace', 'About', 'MRV System'].map((item) => (
-                <a key={item} href="#" className="block px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-md">
-                  {item}
-                </a>
-              ))}
-              <div className="pt-4 flex flex-col space-y-2">
-                <button className="px-3 py-2 text-blue-600 text-left">Login</button>
-                <button className="px-3 py-2 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg">
-                  Register Project
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </header>
+     <Navbar/>
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
