@@ -53,40 +53,119 @@ export default function VerifierDashboard() {
     fetchPendingProjects();
   }, []);
 
+  // API Route 1: GET http://localhost:5000/api/projects/allID
   const fetchPendingProjects = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:5000/api/projects/allID');
-      const data = await response.json();
+      const token = typeof window !== "undefined" ? window.localStorage.getItem("bc_token") : null;
       
-      if (data.success) {
-        setProjects(data.data);
-      } else {
-        setError('Failed to fetch projects');
+      if (!token) {
+        setError('Authentication token not found. Please login again.');
+        setLoading(false);
+        return;
       }
-    } catch (err) {
-      setError('Error connecting to backend');
+
+      const response = await fetch('http://localhost:5000/api/projects/allID', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      // Handle different response statuses
+      if (response.status === 401) {
+        setError('Authentication failed. Please login again.');
+        // Optional: Redirect to login
+        // window.location.href = '/login';
+        return;
+      }
+
+      if (response.status === 403) {
+        setError('Access forbidden. You may not have the required permissions.');
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        setProjects(data.data || []);
+        console.log('Projects fetched successfully:', data.data);
+      } else {
+        setError(data.message || 'Failed to fetch projects');
+      }
+    } catch (err: any) {
+      if (err.name === 'TypeError' && err.message.includes('fetch')) {
+        setError('Unable to connect to backend server. Please check if the server is running.');
+      } else {
+        setError(`Error fetching projects: ${err.message}`);
+      }
       console.error('Error fetching projects:', err);
     } finally {
       setLoading(false);
     }
   };
 
+  // API Route 2: GET http://localhost:5000/api/projects/<projectID>
   const fetchProjectDetails = async (projectId: string) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`http://localhost:5000/api/projects/${projectId}`);
-      const data = await response.json();
+      const token = typeof window !== "undefined" ? window.localStorage.getItem("bc_token") : null;
       
+      if (!token) {
+        setError('Authentication token not found. Please login again.');
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch(`http://localhost:5000/api/projects/${projectId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      // Handle different response statuses
+      if (response.status === 401) {
+        setError('Authentication failed. Please login again.');
+        return;
+      }
+
+      if (response.status === 403) {
+        setError('Access forbidden. You may not have the required permissions.');
+        return;
+      }
+
+      if (response.status === 404) {
+        setError(`Project with ID ${projectId} not found.`);
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
       if (data.success) {
         setSelectedProject(data.project);
+        console.log('Project details fetched successfully:', data.project);
       } else {
-        setError('Failed to fetch project details');
+        setError(data.message || 'Failed to fetch project details');
       }
-    } catch (err) {
-      setError('Error fetching project details');
+    } catch (err: any) {
+      if (err.name === 'TypeError' && err.message.includes('fetch')) {
+        setError('Unable to connect to backend server. Please check if the server is running.');
+      } else {
+        setError(`Error fetching project details: ${err.message}`);
+      }
       console.error('Error fetching project details:', err);
     } finally {
       setLoading(false);
@@ -194,7 +273,7 @@ export default function VerifierDashboard() {
           <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-6">
             Review project submissions and validate carbon credit claims
           </p>
-          
+
           {/* MRV System Button */}
           <div className="flex justify-center space-x-4">
             <Link href="/mrv-system">
@@ -204,7 +283,7 @@ export default function VerifierDashboard() {
                 <ExternalLink className="h-4 w-4" />
               </button>
             </Link>
-            <button 
+            <button
               onClick={fetchPendingProjects}
               disabled={loading}
               className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-2 disabled:opacity-50"
@@ -239,6 +318,12 @@ export default function VerifierDashboard() {
               {error && (
                 <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
                   <p className="text-red-700 text-sm">{error}</p>
+                  <button 
+                    onClick={() => setError(null)}
+                    className="ml-2 text-red-600 hover:text-red-800 text-sm underline"
+                  >
+                    Dismiss
+                  </button>
                 </div>
               )}
             </div>
@@ -258,6 +343,26 @@ export default function VerifierDashboard() {
               </div>
             </div>
           </div>
+
+          {loading && (
+            <div className="text-center py-8">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+              <p className="mt-2 text-gray-600">Loading projects...</p>
+            </div>
+          )}
+
+          {!loading && verificationQueue.length === 0 && !error && (
+            <div className="text-center py-8">
+              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">No projects found</p>
+              <button
+                onClick={fetchPendingProjects}
+                className="mt-2 text-indigo-600 hover:text-indigo-800 text-sm underline"
+              >
+                Try refreshing
+              </button>
+            </div>
+          )}
 
           <div className="space-y-4">
             {verificationQueue.map((project, index) => (
@@ -305,9 +410,10 @@ export default function VerifierDashboard() {
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <button 
+                    <button
                       onClick={() => fetchProjectDetails(project.id)}
-                      className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-2"
+                      disabled={loading}
+                      className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-2 disabled:opacity-50"
                     >
                       <Eye className="h-4 w-4" />
                       <span>View Details</span>
@@ -337,7 +443,7 @@ export default function VerifierDashboard() {
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Project Details</h2>
                 <p className="text-gray-600">Detailed information for {selectedProject.projectId}</p>
               </div>
-              <button 
+              <button
                 onClick={() => setSelectedProject(null)}
                 className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
               >
@@ -536,5 +642,3 @@ export default function VerifierDashboard() {
     </div>
   );
 }
-
-
