@@ -97,6 +97,38 @@ export default function EnhancedMarketplacePage() {
   const [sortBy, setSortBy] = useState("price");
   const [viewMode, setViewMode] = useState("grid");
   const [selectedCredit, setSelectedCredit] = useState<CarbonCredit | null>(null);
+  const [purchaseQuantity, setPurchaseQuantity] = useState<{ [key: string]: number }>({});
+  const [isPurchasing, setIsPurchasing] = useState<{ [key: string]: boolean }>({});
+
+  const handlePurchase = async (credit: CarbonCredit, quantity: number = 1) => {
+    const creditId = credit.id;
+    setIsPurchasing(prev => ({ ...prev, [creditId]: true }));
+    
+    try {
+      // Simulate API call for purchase
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Here you would make actual API call to purchase credits
+      // const response = await fetch('/api/purchase', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ creditId, quantity, price: credit.price })
+      // });
+      
+      alert(`Successfully purchased ${quantity} credit(s) from ${credit.project}!\n\nTotal: ₹${(credit.price * quantity).toFixed(2)}`);
+      
+      // Reset purchase state
+      setPurchaseQuantity(prev => ({ ...prev, [creditId]: 0 }));
+      if (selectedCredit?.id === creditId) {
+        setSelectedCredit(null);
+      }
+    } catch (error) {
+      alert(`Failed to purchase credits. Please try again.`);
+      console.error('Purchase error:', error);
+    } finally {
+      setIsPurchasing(prev => ({ ...prev, [creditId]: false }));
+    }
+  };
 
   const carbonCredits = [
     {
@@ -731,9 +763,22 @@ export default function EnhancedMarketplacePage() {
                     >
                       <Eye className="h-5 w-5 text-gray-600" />
                     </button>
-                    <button className="px-6 py-2 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg hover:from-blue-700 hover:to-green-700 transition-all duration-200 flex items-center space-x-2 font-medium">
-                      <ShoppingCart className="h-4 w-4" />
-                      <span>Buy Credits</span>
+                    <button 
+                      onClick={() => handlePurchase(credit, 1)}
+                      disabled={isPurchasing[credit.id] || credit.available === 0}
+                      className="px-6 py-2 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg hover:from-blue-700 hover:to-green-700 transition-all duration-200 flex items-center space-x-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isPurchasing[credit.id] ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                          <span>Processing...</span>
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingCart className="h-4 w-4" />
+                          <span>Buy Credits</span>
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>
@@ -903,9 +948,31 @@ export default function EnhancedMarketplacePage() {
                     <p className="text-2xl font-bold text-gray-900">₹{selectedCredit.price}</p>
                     <p className="text-sm text-gray-500">per tCO₂e</p>
                   </div>
-                  <button className="px-8 py-3 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-xl hover:from-blue-700 hover:to-green-700 transition-all duration-200 font-semibold">
-                    Purchase Credits
-                  </button>
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="number"
+                      min="1"
+                      max={selectedCredit.available}
+                      value={purchaseQuantity[selectedCredit.id] || 1}
+                      onChange={(e) => setPurchaseQuantity(prev => ({ ...prev, [selectedCredit.id]: parseInt(e.target.value) || 1 }))}
+                      className="w-24 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-blue-500"
+                      placeholder="Qty"
+                    />
+                    <button 
+                      onClick={() => handlePurchase(selectedCredit, purchaseQuantity[selectedCredit.id] || 1)}
+                      disabled={isPurchasing[selectedCredit.id] || selectedCredit.available === 0}
+                      className="px-8 py-3 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-xl hover:from-blue-700 hover:to-green-700 transition-all duration-200 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isPurchasing[selectedCredit.id] ? (
+                        <span className="flex items-center space-x-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                          <span>Processing...</span>
+                        </span>
+                      ) : (
+                        `Purchase ${purchaseQuantity[selectedCredit.id] || 1} Credit${(purchaseQuantity[selectedCredit.id] || 1) > 1 ? 's' : ''}`
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

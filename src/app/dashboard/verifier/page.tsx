@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import dynamic from "next/dynamic";
 import {
   CheckCircle, XCircle, Clock, Eye, Search, Filter,
   MapPin, Calendar, User, FileText, Camera, Globe,
@@ -9,6 +10,21 @@ import {
   Database, ExternalLink, CheckSquare, XSquare
 } from "lucide-react";
 import Link from "next/link";
+
+const GEECanopyPanel = dynamic(
+  () =>
+    import("@/components/GEECanopyPanel").then(
+      (mod) => mod.GEECanopyPanel
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[420px] rounded-2xl border border-dashed border-gray-200 flex items-center justify-center text-sm text-gray-500">
+        Loading Earth Engine canopy panel...
+      </div>
+    ),
+  }
+);
 
 interface Project {
   _id: string;
@@ -99,11 +115,13 @@ export default function VerifierDashboard() {
       } else {
         setError(data.message || 'Failed to fetch projects');
       }
-    } catch (err: any) {
-      if (err.name === 'TypeError' && err.message.includes('fetch')) {
+    } catch (err: unknown) {
+      if (err instanceof TypeError && err.message.includes('fetch')) {
         setError('Unable to connect to backend server. Please check if the server is running.');
-      } else {
+      } else if (err instanceof Error) {
         setError(`Error fetching projects: ${err.message}`);
+      } else {
+        setError('Error fetching projects: Unknown error');
       }
       console.error('Error fetching projects:', err);
     } finally {
@@ -160,17 +178,26 @@ export default function VerifierDashboard() {
       } else {
         setError(data.message || 'Failed to fetch project details');
       }
-    } catch (err: any) {
-      if (err.name === 'TypeError' && err.message.includes('fetch')) {
+    } catch (err: unknown) {
+      if (err instanceof TypeError && err.message.includes('fetch')) {
         setError('Unable to connect to backend server. Please check if the server is running.');
-      } else {
+      } else if (err instanceof Error) {
         setError(`Error fetching project details: ${err.message}`);
+      } else {
+        setError('Error fetching project details: Unknown error');
       }
       console.error('Error fetching project details:', err);
     } finally {
       setLoading(false);
     }
   };
+
+  const projectCenter = selectedProject
+    ? ([selectedProject.gps.latitude, selectedProject.gps.longitude] as [
+        number,
+        number
+      ])
+    : undefined;
 
   const stats = [
     {
@@ -535,33 +562,14 @@ export default function VerifierDashboard() {
                 <Camera className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-gray-900">Evidence Viewer</h3>
-                <p className="text-gray-600">Review submitted imagery and data</p>
+                <h3 className="text-xl font-bold text-gray-900">Remote Sensing Evidence</h3>
+                <p className="text-gray-600">
+                  Stream Google Earth Engine canopy layers, quantify AOI, and flag anomalies
+                </p>
               </div>
             </div>
 
-            <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center border-2 border-dashed border-gray-300">
-              <div className="text-center">
-                <Globe className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500 mb-2">Interactive Evidence Viewer</p>
-                <p className="text-sm text-gray-400">Select a project to view satellite imagery, drone footage, and field data</p>
-              </div>
-            </div>
-
-            <div className="mt-6 grid grid-cols-3 gap-3">
-              <button className="p-3 bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 group">
-                <Camera className="h-6 w-6 text-blue-600 mx-auto mb-1 group-hover:scale-110 transition-transform" />
-                <div className="text-xs font-medium text-blue-700">Photos</div>
-              </button>
-              <button className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 group">
-                <Globe className="h-6 w-6 text-green-600 mx-auto mb-1 group-hover:scale-110 transition-transform" />
-                <div className="text-xs font-medium text-green-700">Satellite</div>
-              </button>
-              <button className="p-3 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 group">
-                <BarChart3 className="h-6 w-6 text-purple-600 mx-auto mb-1 group-hover:scale-110 transition-transform" />
-                <div className="text-xs font-medium text-purple-700">Analytics</div>
-              </button>
-            </div>
+            <GEECanopyPanel center={projectCenter} projectName={selectedProject?.projectId} />
           </div>
 
           {/* Recent Decisions */}
@@ -604,7 +612,7 @@ export default function VerifierDashboard() {
 
             <div className="mt-6 pt-6 border-t border-gray-200">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">This month's impact:</span>
+                <span className="text-gray-600">This month&apos;s impact:</span>
                 <span className="font-bold text-green-600">8,700 tCO₂e verified</span>
               </div>
             </div>

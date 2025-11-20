@@ -1,38 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { Database, Blocks, Users, ScanLine, Leaf, Waves, Shield, Menu, X, ArrowRight, CheckCircle, Globe, Zap, TreePine, Heart, Award, TrendingUp, MapPin, Clock, DollarSign, Smartphone, Satellite, Camera, FileCheck, Coins, Building, Users2, Handshake, BarChart3 } from "lucide-react";
+import React from 'react';
+import { Database, Blocks, Leaf, Shield, ArrowRight, CheckCircle, Globe, TreePine, Heart, TrendingUp, Clock, DollarSign, Smartphone, Satellite, Camera, FileCheck, Coins, Building, Users2, Handshake, BarChart3 } from "lucide-react";
 import ClientMap from "@/components/ClientMap";
 import { TimeSeries } from "@/components/TimeSeries";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import Link from 'next/link';
-import Navbar from '@/components/Navbar';
 
 export default function BlueCarbonLanding() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [scrollY, setScrollY] = useState(0);
-  const [currentPage, setCurrentPage] = useState('Home');
-
-  const navItems = [
-    { label: "Home", href: "/" },
-    { label: "Projects", href: "/projects" },
-    { label: "Marketplace", href: "/marketplace" },
-    { label: "About", href: "/about" },
-    { label: "MRV System", href: "/mrv-system" },
-  ];
-
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const handleNavigation = (label, href) => {
-    setCurrentPage(label);
-    setIsMenuOpen(false);
-    // In a real app, you'd use Next.js router or React Router here
-    console.log(`Navigating to: ${href}`);
-  };
 
   return (
     <div className="bg-white overflow-x-hidden min-h-screen">
@@ -77,9 +52,6 @@ export default function BlueCarbonLanding() {
           background-clip: text;
         }
       `}</style>
-
-     <Navbar/>
-
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
         <div className="absolute inset-0 gradient-bg"></div>
@@ -138,9 +110,9 @@ export default function BlueCarbonLanding() {
       <section className="py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 slide-in">
-            <h2 className="text-4xl font-bold text-gray-900 mb-6">The Challenge We're Solving</h2>
+            <h2 className="text-4xl font-bold text-gray-900 mb-6">The Challenge We&apos;re Solving</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              India's blue carbon restoration efforts lack transparency, verifiable monitoring, and decentralized governance
+              India&apos;s blue carbon restoration efforts lack transparency, verifiable monitoring, and decentralized governance
             </p>
           </div>
 
@@ -476,7 +448,10 @@ export default function BlueCarbonLanding() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <Link href="/dashboard/Register" className="px-8 py-4 bg-white text-blue-600 rounded-xl font-semibold hover:shadow-xl transition-all glow text-lg">
+            <Link
+              href="/register-project"
+              className="px-8 py-4 bg-white text-blue-600 rounded-xl font-semibold hover:shadow-xl transition-all glow text-lg"
+            >
               Register a Project
             </Link>
             <Link href="/projects" className="px-8 py-4 border-2 border-white text-white rounded-xl font-semibold hover:bg-white hover:text-blue-600 transition-all text-lg">

@@ -82,7 +82,7 @@ export default function Navbar() {
                 Login
               </Link>
               <Link
-                href="/dashboard/Register"
+                href="/register-project"
                 className="px-6 py-2 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg hover:shadow-lg transition-all font-medium"
               >
                 Register Project
@@ -126,7 +126,7 @@ export default function Navbar() {
                   Login
                 </Link>
                 <Link
-                  href="/dashboard/Register"
+                  href="/register-project"
                   onClick={handleMobileNavClick}
                   className="px-3 py-2 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg text-center hover:shadow-lg transition-all"
                 >

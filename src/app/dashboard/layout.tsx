@@ -1,10 +1,9 @@
 "use client";
 
-import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Waves, ArrowLeft } from "lucide-react";
+import { Waves } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import "../globals.css";
 
@@ -33,7 +32,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  const router = useRouter();
   const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
@@ -68,39 +66,36 @@ export default function RootLayout({
       >
         <div className="min-h-screen flex flex-col">
           {/* Navbar */}
-          <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b">
+          {/* <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-              <a
+              <Link
                 href="/"
                 className="font-semibold tracking-tight text-lg text-[var(--primary)]"
               >
                 🌊 BlueCarbon Registry
-              </a>
+              </Link>
               <nav className="hidden md:flex items-center gap-6 text-sm text-slate-700">
-                <a href="/" className="hover:text-[var(--primary)]">
+                <Link href="/" className="hover:text-[var(--primary)]">
                   Home
-                </a>
-                <a href="/projects" className="hover:text-[var(--primary)]">
+                </Link>
+                <Link href="/projects" className="hover:text-[var(--primary)]">
                   Projects
-                </a>
-                <a href="#how" className="hover:text-[var(--primary)]">
-                  How It Works
-                </a>
-                <a href="/marketplace" className="hover:text-[var(--primary)]">
+                </Link>
+                <Link href="/marketplace" className="hover:text-[var(--primary)]">
                   Marketplace
-                </a>
-                <a href="/auth" className="hover:text-[var(--primary)]">
+                </Link>
+                <Link href="/auth" className="hover:text-[var(--primary)]">
                   Login
-                </a>
+                </Link>
               </nav>
-              <a
+              <Link
                 href="/auth"
                 className="rounded-xl px-4 py-2 text-sm font-medium shadow-md bg-[var(--eco)] text-white hover:brightness-105"
               >
                 Get Started
-              </a>
+              </Link>
             </div>
-          </header>
+          </header> */}
 
           {/* Main Content */}
           <div className="flex-1 flex">
@@ -304,7 +299,7 @@ export default function RootLayout({
                   </h4>
                   <ul className="space-y-3">
                     <li>
-                      <a
+                      <Link
                         href="/projects"
                         className="text-gray-300 hover:text-green-400 transition-colors duration-200 flex items-center group"
                       >
@@ -322,10 +317,10 @@ export default function RootLayout({
                           />
                         </svg>
                         Browse Projects
-                      </a>
+                      </Link>
                     </li>
                     <li>
-                      <a
+                      <Link
                         href="/marketplace"
                         className="text-gray-300 hover:text-green-400 transition-colors duration-200 flex items-center group"
                       >
@@ -343,10 +338,10 @@ export default function RootLayout({
                           />
                         </svg>
                         Carbon Marketplace
-                      </a>
+                      </Link>
                     </li>
                     <li>
-                      <a
+                      <Link
                         href="/dashboard/owner"
                         className="text-gray-300 hover:text-green-400 transition-colors duration-200 flex items-center group"
                       >
@@ -364,7 +359,7 @@ export default function RootLayout({
                           />
                         </svg>
                         Owner Dashboard
-                      </a>
+                      </Link>
                     </li>
                   </ul>
                 </div>
@@ -389,7 +384,7 @@ export default function RootLayout({
                   </h4>
                   <ul className="space-y-3">
                     <li>
-                      <a
+                      <Link
                         href="/dashboard/verifier"
                         className="text-gray-300 hover:text-blue-400 transition-colors duration-200 flex items-center group"
                       >
@@ -407,10 +402,10 @@ export default function RootLayout({
                           />
                         </svg>
                         Verification Queue
-                      </a>
+                      </Link>
                     </li>
                     <li>
-                      <a
+                      <Link
                         href="/auth"
                         className="text-gray-300 hover:text-blue-400 transition-colors duration-200 flex items-center group"
                       >
@@ -428,7 +423,7 @@ export default function RootLayout({
                           />
                         </svg>
                         Become a verifier
-                      </a>
+                      </Link>
                     </li>
                   </ul>
                 </div>
@@ -453,7 +448,7 @@ export default function RootLayout({
                   </h4>
                   <ul className="space-y-3">
                     <li>
-                      <a
+                      <Link
                         href="/support"
                         className="text-gray-300 hover:text-green-400 transition-colors duration-200 flex items-center group"
                       >
@@ -471,10 +466,10 @@ export default function RootLayout({
                           />
                         </svg>
                         Help & Support
-                      </a>
+                      </Link>
                     </li>
                     <li>
-                      <a
+                      <Link
                         href="/terms"
                         className="text-gray-300 hover:text-green-400 transition-colors duration-200 flex items-center group"
                       >
@@ -492,10 +487,10 @@ export default function RootLayout({
                           />
                         </svg>
                         Terms & Conditions
-                      </a>
+                      </Link>
                     </li>
                     <li>
-                      <a
+                      <Link
                         href="/privacy"
                         className="text-gray-300 hover:text-green-400 transition-colors duration-200 flex items-center group"
                       >
@@ -513,7 +508,7 @@ export default function RootLayout({
                           />
                         </svg>
                         Privacy Policy
-                      </a>
+                      </Link>
                     </li>
                   </ul>
                 </div>

@@ -35,8 +35,6 @@ export default function RootLayout({
 
   const navItems = [
     { label: "Home", href: "/" },
-    { label: "Projects", href: "/projects" },
-    { label: "How It Works", href: "#how" },
     { label: "Marketplace", href: "/marketplace" },
     { label: "Login", href: "/auth" },
   ];
@@ -81,24 +79,25 @@ export default function RootLayout({
 
               {/* Desktop Navigation */}
               <nav className="hidden md:flex items-center gap-2 text-sm">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    className={`px-4 py-2 rounded-lg transition-all duration-300 backdrop-blur-sm font-medium ${
-                      scrollY > 50
-                        ? isActivePage(item.href)
-                          ? 'text-blue-600 bg-blue-50'
-                          : 'text-gray-700 hover:text-blue-600 hover:bg-gray-100/80'
-                        : isActivePage(item.href)
-                          ? 'text-blue-200 bg-white/20'
-                          : 'text-white/90 hover:text-white hover:bg-white/20'
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </nav>
+  {navItems.map((item) => (
+    <Link
+      key={item.label}
+      href={item.href}
+      className={`px-4 py-2 text-black rounded-lg transition-all duration-300 backdrop-blur-sm font-medium ${
+        scrollY > 50
+          ? isActivePage(item.href)
+            ? 'bg-blue-50' // Active page remains with background color, but text is black
+            : 'hover:text-black hover:bg-gray-100/80' // Hover state with black text
+          : isActivePage(item.href)
+            ? 'bg-white/20' // Active page on scroll with background color
+            : 'text-black hover:text-black hover:bg-white/20' // Default text is black
+      }`}
+    >
+      {item.label}
+    </Link>
+  ))}
+</nav>
+
 
               {/* CTA Button */}
               <Link
@@ -107,7 +106,7 @@ export default function RootLayout({
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-green-500 opacity-90 group-hover:opacity-100 transition-opacity"></div>
                 <div className="absolute inset-0 bg-white/10 backdrop-blur-sm group-hover:bg-white/5 transition-colors"></div>
-                <span className="relative text-white drop-shadow-sm">Get Started</span>
+                <span className="relative text-black drop-shadow-sm">Get Started</span>
               </Link>
 
               {/* Mobile Menu Button */}
@@ -140,10 +139,10 @@ export default function RootLayout({
                       key={item.label}
                       href={item.href}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className={`block w-full text-left px-4 py-3 rounded-lg transition-colors font-medium ${
+                      className={`block w-full text-black text-left px-4 py-3 rounded-lg transition-colors font-medium ${
                         isActivePage(item.href)
                           ? 'text-blue-600 bg-blue-50'
-                          : 'text-gray-700 hover:bg-gray-100 hover:text-blue-600'
+                          : 'text-black hover:bg-gray-100 hover:text-blue-600'
                       }`}
                     >
                       {item.label}
