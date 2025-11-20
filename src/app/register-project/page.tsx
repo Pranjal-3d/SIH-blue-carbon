@@ -95,6 +95,7 @@ interface FormData {
   ecosystemType: string;
   organizationName: string;
   ownerName: string;
+  ownerAddress?: string;
   email: string;
   phone: string;
   area: string;
@@ -416,6 +417,7 @@ export default function ProjectRegistrationPage() {
     ecosystemType: '',
     organizationName: '',
     ownerName: '',
+    ownerAddress: '',
     email: '',
     phone: '',
     area: '',
@@ -438,6 +440,25 @@ export default function ProjectRegistrationPage() {
     seedlings: '',
     estimatedCO2Sequestration: 0
   });
+
+  const [walletAddress, setWalletAddress] = useState<string>('');
+
+  const connectWallet = async () => {
+    try {
+      if (!(window as any).ethereum) {
+        alert('MetaMask not detected. Please install MetaMask.');
+        return;
+      }
+      const accounts = await (window as any).ethereum.request({ method: 'eth_requestAccounts' });
+      if (accounts && accounts.length > 0) {
+        setWalletAddress(accounts[0]);
+        setFormData(prev => ({ ...prev, ownerAddress: accounts[0] }));
+      }
+    } catch (err) {
+      console.error('Wallet connect error:', err);
+      alert('Failed to connect wallet');
+    }
+  };
 
   const [locationLoading, setLocationLoading] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<CurrentLocation | null>(null);
@@ -1072,14 +1093,37 @@ export default function ProjectRegistrationPage() {
 
   const handleSubmit = async () => {
     try {
+      // Ensure owner wallet address is present
+      const ownerAddr = formData.ownerAddress || walletAddress;
+      if (!ownerAddr) {
+        alert('Please connect your MetaMask wallet. Owner wallet address is required to register a project.');
+        return;
+      }
+
       const submissionData = {
         ...formData,
+        ownerAddress: ownerAddr,
         submissionTimestamp: new Date().toISOString(),
         blockchainReady: true
       };
 
-      console.log('Submission Data:', submissionData);
-      alert('Project registration submitted successfully!');
+      // POST to backend API
+      const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000').replace(/\/$/, '') + '/api/projects/register';
+      const res = await fetch(backendUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(submissionData)
+      });
+
+      const result = await res.json();
+      if (res.ok) {
+        alert('Project registration submitted successfully!');
+        console.log('Registration result:', result);
+      } else {
+        console.error('Registration failed:', result);
+        alert('Failed to register project: ' + (result.message || 'Unknown error'));
+      }
     } catch (error) {
       console.error('Submission error:', error);
       alert('Failed to submit project registration. Please try again.');
@@ -1103,7 +1147,8 @@ export default function ProjectRegistrationPage() {
       case 0:
         return formData.projectName && formData.description && formData.ecosystemType;
       case 1:
-        return formData.organizationName && formData.ownerName && formData.email && formData.phone;
+        // Require owner wallet address (MetaMask) to proceed
+        return formData.organizationName && formData.ownerName && (formData.ownerAddress || walletAddress) && formData.email && formData.phone;
       case 2:
         return formData.location.address && formData.area && formData.density;
       case 3:
@@ -1244,6 +1289,22 @@ export default function ProjectRegistrationPage() {
                   placeholder="Enter owner name"
                   required
                 />
+                <div className="mt-2 flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={connectWallet}
+                    className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm"
+                  >
+                    Connect Wallet
+                  </button>
+                  <div className="text-sm text-gray-600">
+                    {walletAddress ? (
+                      <span>Connected: {walletAddress.slice(0,6)}...{walletAddress.slice(-4)}</span>
+                    ) : (
+                      <span className="italic">No wallet connected</span>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -1965,10 +2026,11 @@ export default function ProjectRegistrationPage() {
               <div className="flex items-center justify-center">
                 <button
                   onClick={handleSubmit}
-                  className="px-8 py-3 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-xl hover:from-blue-700 hover:to-green-700 transition-all duration-300 font-semibold flex items-center gap-2"
+                  disabled={!(formData.ownerAddress || walletAddress)}
+                  className={`px-8 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all duration-300 ${formData.ownerAddress || walletAddress ? 'bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white' : 'bg-gray-300 text-gray-600 cursor-not-allowed'}`}
                 >
                   <Zap className="h-5 w-5" />
-                  Submit to Blockchain
+                  {formData.ownerAddress || walletAddress ? 'Submit to Blockchain' : 'Connect Wallet to Submit'}
                 </button>
               </div>
               <p className="text-center text-sm text-gray-500 mt-3">

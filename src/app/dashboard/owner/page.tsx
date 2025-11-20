@@ -11,8 +11,31 @@ import Link from "next/link";
 export default function OwnerDashboard() {
   const [isVisible, setIsVisible] = useState(false);
 
+  const [walletAddress, setWalletAddress] = useState<string>('');
+  const [projectsData, setProjectsData] = useState<any[]>([]);
+
+  const connectWallet = async () => {
+    try {
+      if (!(window as any).ethereum) { alert('MetaMask not found'); return; }
+      const accounts = await (window as any).ethereum.request({ method: 'eth_requestAccounts' });
+      if (accounts && accounts.length) setWalletAddress(accounts[0]);
+    } catch (err) { console.error(err); alert('Failed to connect wallet'); }
+  };
+
   useEffect(() => {
     setIsVisible(true);
+  }, []);
+
+  useEffect(() => {
+    // fetch user's projects
+    const fetchProjects = async () => {
+      try {
+        const res = await fetch((process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000') + '/api/projects/my-projects', { credentials: 'include' });
+        const json = await res.json();
+        if (res.ok && json.projects) setProjectsData(json.projects);
+      } catch (e) { console.error('Failed to load projects', e); }
+    };
+    fetchProjects();
   }, []);
 
   const stats = [
@@ -42,7 +65,7 @@ export default function OwnerDashboard() {
     }
   ];
 
-  const projects = [
+  const staticProjects = [
     {
       name: "Sundarbans Mangrove Restoration",
       status: "Pending verification",
@@ -60,6 +83,8 @@ export default function OwnerDashboard() {
       credits: "3,500 tCO₂e"
     }
   ];
+
+  const projects = projectsData.length ? projectsData : staticProjects;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50 p-6">
@@ -116,15 +141,15 @@ export default function OwnerDashboard() {
                       <TreePine className="h-6 w-6 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">{project.name}</h3>
+                      <h3 className="text-lg font-semibold text-gray-900">{project.Project_Name || project.name}</h3>
                       <div className="flex items-center space-x-2 text-sm text-gray-600">
                         <MapPin className="h-4 w-4" />
-                        <span>{project.location}</span>
+                        <span>{project.State_UT || project.location}</span>
                       </div>
                     </div>
                   </div>
-                  <div className={`px-3 py-1 rounded-full text-sm font-medium ${project.statusColor}`}>
-                    {project.status}
+                  <div className={`px-3 py-1 rounded-full text-sm font-medium ${project.statusColor || (project.status === 'Verified' ? 'text-green-600 bg-green-100' : 'text-amber-600 bg-amber-100')}`}>
+                    {project.status || (project.status === undefined && (project.statu || 'Pending'))}
                   </div>
                 </div>
 
@@ -132,18 +157,38 @@ export default function OwnerDashboard() {
                   <div className="flex-1 mr-6">
                     <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
                       <span>Progress</span>
-                      <span>{project.progress}%</span>
+                      <span>{project.progress || 0}%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
                         className="bg-gradient-to-r from-blue-500 to-emerald-600 h-2 rounded-full transition-all duration-500"
-                        style={{ width: `${project.progress}%` }}
+                        style={{ width: `${project.progress || 0}%` }}
                       ></div>
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="text-sm text-gray-600">Credits</div>
-                    <div className="text-lg font-bold text-green-600">{project.credits}</div>
+                    <div className="text-lg font-bold text-green-600">{project.Carbon_Credits_Issued ? `${project.Carbon_Credits_Issued} tCO₂e` : project.credits}</div>
+                    {project.blockchain?.isRegistered && (
+                      <div className="mt-3">
+                        <button
+                          onClick={async () => {
+                            if (!walletAddress) { alert('Connect wallet first'); return; }
+                            const price = prompt('Enter listing price in ETH');
+                            if (!price) return;
+                            try {
+                              const body = { projectId: project.Project_ID, tokenId: project.blockchain.tokenId, priceEth: price, sellerAddress: walletAddress };
+                              const res = await fetch((process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000') + '/api/marketplace/list', {
+                                method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(body)
+                              });
+                              const json = await res.json();
+                              if (res.ok) alert('Listed successfully'); else alert('Listing failed: ' + (json.message || json.error || JSON.stringify(json)));
+                            } catch (err) { console.error(err); alert('Listing request failed'); }
+                          }}
+                          className="mt-2 px-3 py-1 bg-indigo-600 text-white rounded-md"
+                        >List on Marketplace</button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

@@ -4,10 +4,14 @@ import React, { useState, useEffect } from 'react';
 import { Waves, Menu, X } from "lucide-react";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { ethers } from 'ethers';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrollY, setScrollY] = useState(0);
+  const [walletAddress, setWalletAddress] = useState('');
+  const [isConnectingWallet, setIsConnectingWallet] = useState(false);
+  const [walletError, setWalletError] = useState('');
   const pathname = usePathname();
 
   const navItems = [
@@ -24,11 +28,58 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    if (typeof window === 'undefined' || !(window as any).ethereum) return;
+
+    const ethereum = (window as any).ethereum;
+
+    const handleAccountsChanged = (accounts: string[]) => {
+      setWalletAddress(accounts && accounts.length > 0 ? accounts[0] : '');
+    };
+
+    ethereum.on?.('accountsChanged', handleAccountsChanged);
+
+    return () => {
+      ethereum.removeListener?.('accountsChanged', handleAccountsChanged);
+    };
+  }, []);
+
+  const connectWallet = async () => {
+    try {
+      setWalletError('');
+      setIsConnectingWallet(true);
+
+      if (typeof window === 'undefined' || !(window as any).ethereum) {
+        setWalletError('Metamask not detected');
+        return;
+      }
+
+      const provider = new ethers.BrowserProvider((window as any).ethereum);
+      const accounts = await provider.send('eth_requestAccounts', []);
+
+      if (!accounts || accounts.length === 0) {
+        setWalletError('No accounts available');
+        return;
+      }
+
+      setWalletAddress(accounts[0]);
+    } catch (error: any) {
+      if (error?.code === 4001) {
+        setWalletError('Connection rejected');
+      } else {
+        setWalletError('Failed to connect wallet');
+      }
+      console.error('Wallet connect error:', error);
+    } finally {
+      setIsConnectingWallet(false);
+    }
+  };
+
   const handleMobileNavClick = () => {
     setIsMenuOpen(false);
   };
 
-  const isActivePage = (href) => {
+  const isActivePage = (href: string) => {
     return pathname === href;
   };
 
@@ -75,6 +126,19 @@ export default function Navbar() {
 
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center space-x-4">
+              {walletAddress ? (
+                <div className="px-4 py-2 rounded-lg bg-gray-100 text-gray-800 text-sm font-medium">
+                  {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+                </div>
+              ) : (
+                <button
+                  onClick={connectWallet}
+                  disabled={isConnectingWallet}
+                  className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-900 text-white hover:bg-gray-800 transition disabled:opacity-60"
+                >
+                  {isConnectingWallet ? 'Connecting...' : 'Connect Wallet'}
+                </button>
+              )}
               <Link 
                 href="/auth"
                 className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
@@ -102,21 +166,23 @@ export default function Navbar() {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden bg-white border-t shadow-lg">
-            <div className="px-4 pt-4 pb-3 space-y-2">
-              {navItems.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  onClick={handleMobileNavClick}
-                  className={`block w-full text-left px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-md transition-colors ${
-                    isActivePage(item.href) ? 'text-blue-600 bg-blue-50' : ''
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              ))}
+          <>
+            <div className="md:hidden bg-white border-t shadow-lg">
+              <div className="px-4 pt-4 pb-3 space-y-2">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    onClick={handleMobileNavClick}
+                    className={`block w-full text-left px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-md transition-colors ${
+                      isActivePage(item.href) ? 'text-blue-600 bg-blue-50' : ''
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
 
+<<<<<<< HEAD
               <div className="pt-4 border-t border-gray-200 flex flex-col space-y-2">
                 <Link 
                   href="/auth"
@@ -132,9 +198,46 @@ export default function Navbar() {
                 >
                   Register Project
                 </Link>
+=======
+                <div className="pt-4 border-t border-gray-200 flex flex-col space-y-2">
+                  {walletAddress ? (
+                    <div className="px-3 py-2 text-sm font-semibold text-gray-800 bg-gray-100 rounded-md">
+                      {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        connectWallet();
+                        handleMobileNavClick();
+                      }}
+                      disabled={isConnectingWallet}
+                      className="px-3 py-2 text-left rounded-md bg-gray-900 text-white text-sm font-medium disabled:opacity-60"
+                    >
+                      {isConnectingWallet ? 'Connecting...' : 'Connect Wallet'}
+                    </button>
+                  )}
+                  <Link 
+                    href="/auth"
+                    onClick={handleMobileNavClick}
+                    className="px-3 py-2 text-blue-600 text-left hover:bg-blue-50 rounded-md transition-colors"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href="/dashboard/Register"
+                    onClick={handleMobileNavClick}
+                    className="px-3 py-2 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg text-center hover:shadow-lg transition-all"
+                  >
+                    Register Project
+                  </Link>
+                </div>
+>>>>>>> e8bc08fda70fac0c108c4b25ab2a5c33e3be065e
               </div>
             </div>
-          </div>
+            {walletError && (
+              <p className="px-4 pb-4 text-sm text-red-600">{walletError}</p>
+            )}
+          </>
         )}
       </header>
     </>

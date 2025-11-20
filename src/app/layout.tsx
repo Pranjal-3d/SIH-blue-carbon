@@ -35,6 +35,7 @@ export default function RootLayout({
 
   const navItems = [
     { label: "Home", href: "/" },
+    { label: "Projects", href: "/projects" },
     { label: "Marketplace", href: "/marketplace" },
     { label: "Login", href: "/auth" },
   ];
@@ -79,25 +80,24 @@ export default function RootLayout({
 
               {/* Desktop Navigation */}
               <nav className="hidden md:flex items-center gap-2 text-sm">
-  {navItems.map((item) => (
-    <Link
-      key={item.label}
-      href={item.href}
-      className={`px-4 py-2 text-black rounded-lg transition-all duration-300 backdrop-blur-sm font-medium ${
-        scrollY > 50
-          ? isActivePage(item.href)
-            ? 'bg-blue-50' // Active page remains with background color, but text is black
-            : 'hover:text-black hover:bg-gray-100/80' // Hover state with black text
-          : isActivePage(item.href)
-            ? 'bg-white/20' // Active page on scroll with background color
-            : 'text-black hover:text-black hover:bg-white/20' // Default text is black
-      }`}
-    >
-      {item.label}
-    </Link>
-  ))}
-</nav>
-
+                {navItems.map((item) => (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    className={`px-4 py-2 text-black rounded-lg transition-all duration-300 backdrop-blur-sm font-medium ${
+                      scrollY > 50
+                        ? isActivePage(item.href)
+                          ? 'text-blue-600 bg-blue-50'
+                          : 'text-black hover:text-blue-600 hover:bg-gray-100/80'
+                        : isActivePage(item.href)
+                          ? 'text-blue-200 bg-white/20'
+                          : 'text-white/90 hover:text-white hover:bg-white/20'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </nav>
 
               {/* CTA Button */}
               <Link

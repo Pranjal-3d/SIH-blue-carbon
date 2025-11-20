@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Search, 
   Filter, 
@@ -37,6 +37,7 @@ import {
   Zap,
   Droplets
 } from "lucide-react";
+import { ethers } from "ethers";
 
 // Type definitions
 interface CarbonCredit {
@@ -97,6 +98,7 @@ export default function EnhancedMarketplacePage() {
   const [sortBy, setSortBy] = useState("price");
   const [viewMode, setViewMode] = useState("grid");
   const [selectedCredit, setSelectedCredit] = useState<CarbonCredit | null>(null);
+<<<<<<< HEAD
   const [purchaseQuantity, setPurchaseQuantity] = useState<{ [key: string]: number }>({});
   const [isPurchasing, setIsPurchasing] = useState<{ [key: string]: boolean }>({});
 
@@ -129,6 +131,96 @@ export default function EnhancedMarketplacePage() {
       setIsPurchasing(prev => ({ ...prev, [creditId]: false }));
     }
   };
+=======
+  const [walletAddress, setWalletAddress] = useState("");
+  const [isConnectingWallet, setIsConnectingWallet] = useState(false);
+  const [walletError, setWalletError] = useState("");
+  const [isProcessingTx, setIsProcessingTx] = useState(false);
+  const [txStatus, setTxStatus] = useState("");
+  useEffect(() => {
+    if (typeof window === "undefined" || !(window as any).ethereum) return;
+    const ethereum = (window as any).ethereum;
+
+    const handleAccountsChanged = (accounts: string[]) => {
+      setWalletAddress(accounts && accounts.length > 0 ? accounts[0] : "");
+    };
+
+    ethereum.on?.("accountsChanged", handleAccountsChanged);
+
+    return () => {
+      ethereum.removeListener?.("accountsChanged", handleAccountsChanged);
+    };
+  }, []);
+
+  const ensureWalletConnection = async () => {
+    if (typeof window === "undefined" || !(window as any).ethereum) {
+      throw new Error("Metamask not detected. Please install Metamask extension.");
+    }
+
+    const provider = new ethers.BrowserProvider((window as any).ethereum);
+    const accounts = await provider.send("eth_requestAccounts", []);
+
+    if (!accounts || accounts.length === 0) {
+      throw new Error("No Metamask accounts found. Please unlock your wallet.");
+    }
+
+    setWalletAddress(accounts[0]);
+    return {
+      provider,
+      signer: await provider.getSigner(),
+      account: accounts[0],
+    };
+  };
+
+  const connectWallet = async () => {
+    try {
+      setWalletError("");
+      setIsConnectingWallet(true);
+      await ensureWalletConnection();
+    } catch (error: any) {
+      if (error?.code === 4001) {
+        setWalletError("Connection request rejected.");
+      } else {
+        setWalletError(error?.message || "Failed to connect wallet.");
+      }
+    } finally {
+      setIsConnectingWallet(false);
+    }
+  };
+
+  const handleBuyCredit = async (credit: CarbonCredit) => {
+    try {
+      setTxStatus("");
+      setWalletError("");
+      setIsProcessingTx(true);
+
+      const { signer } = await ensureWalletConnection();
+
+      const amountInEth = "0.001"; // demo amount
+      setTxStatus(`Initiating purchase of ${credit.project} (sending ${amountInEth} ETH)...`);
+
+      const tx = await signer.sendTransaction({
+        to: await signer.getAddress(), // demo: send to self; replace with marketplace escrow
+        value: ethers.parseEther(amountInEth),
+      });
+
+      setTxStatus("Waiting for transaction confirmation...");
+      await tx.wait();
+
+      setTxStatus(`✅ Transaction confirmed: ${tx.hash}`);
+    } catch (error: any) {
+      console.error("Transaction failed:", error);
+      if (error?.code === 4001) {
+        setTxStatus("❌ Transaction rejected by user.");
+      } else {
+        setTxStatus(`❌ Transaction failed: ${error?.message || "Unknown error"}`);
+      }
+    } finally {
+      setIsProcessingTx(false);
+    }
+  };
+
+>>>>>>> e8bc08fda70fac0c108c4b25ab2a5c33e3be065e
 
   const carbonCredits = [
     {
@@ -522,7 +614,7 @@ export default function EnhancedMarketplacePage() {
       {/* Header */}
       <div className="bg-white shadow-lg border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <div className="flex items-center space-x-3 mb-2">
                 <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-green-600 rounded-xl flex items-center justify-center">
@@ -540,7 +632,29 @@ export default function EnhancedMarketplacePage() {
               <div className="bg-green-50 px-4 py-2 rounded-lg">
                 <p className="text-sm text-green-700 font-medium">🌱 Climate Positive Trading</p>
               </div>
+              <div className="bg-blue-50 px-4 py-2 rounded-lg">
+                <p className="text-sm text-blue-700 font-medium">
+                  {walletAddress ? `Wallet: ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : "No wallet connected"}
+                </p>
+              </div>
             </div>
+          </div>
+          <div className="mt-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={connectWallet}
+                disabled={isConnectingWallet}
+                className="px-5 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md hover:shadow-lg disabled:opacity-60"
+              >
+                {isConnectingWallet ? "Connecting..." : walletAddress ? "Reconnect Wallet" : "Connect Metamask"}
+              </button>
+              {walletError && <p className="text-sm text-red-600">{walletError}</p>}
+            </div>
+            {txStatus && (
+              <p className="text-sm text-gray-700 bg-gray-100 px-4 py-2 rounded-lg">
+                {txStatus}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -763,6 +877,7 @@ export default function EnhancedMarketplacePage() {
                     >
                       <Eye className="h-5 w-5 text-gray-600" />
                     </button>
+<<<<<<< HEAD
                     <button 
                       onClick={() => handlePurchase(credit, 1)}
                       disabled={isPurchasing[credit.id] || credit.available === 0}
@@ -779,6 +894,15 @@ export default function EnhancedMarketplacePage() {
                           <span>Buy Credits</span>
                         </>
                       )}
+=======
+                    <button
+                      onClick={() => handleBuyCredit(credit)}
+                      disabled={isProcessingTx}
+                      className="px-6 py-2 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg hover:from-blue-700 hover:to-green-700 transition-all duration-200 flex items-center space-x-2 font-medium disabled:opacity-60"
+                    >
+                      <ShoppingCart className="h-4 w-4" />
+                      <span>{isProcessingTx ? "Processing..." : "Buy Credits"}</span>
+>>>>>>> e8bc08fda70fac0c108c4b25ab2a5c33e3be065e
                     </button>
                   </div>
                 </div>
