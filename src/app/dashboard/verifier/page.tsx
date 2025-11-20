@@ -220,6 +220,166 @@ export default function VerifierDashboard() {
     }
   };
 
+  const handleApprove = async (project: PendingProject) => {
+    if (!project.evidence) {
+      setError('Project evidence not available. Cannot approve without evidence.');
+      return;
+    }
+
+    // Try to use evidence _id first (if it's a full document), otherwise use project _id
+    const projectIdToUse = (project.evidence as any)?._id || project._id;
+    
+    if (!projectIdToUse) {
+      setError('Project ID not found. Please refresh and try again.');
+      return;
+    }
+
+    if (!window.confirm(`Are you sure you want to approve project ${project.projectId}? This will register it on the blockchain and mint tokens.`)) {
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      const token = typeof window !== "undefined" ? window.localStorage.getItem("bc_token") : null;
+      
+      if (!token) {
+        setError('Authentication token not found. Please login again.');
+        setLoading(false);
+        return;
+      }
+
+      const evidence = project.evidence;
+      const response = await fetch(`http://localhost:5000/api/verification/approve/${projectIdToUse}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          comments: `Project approved by verifier`,
+          gps: evidence.gps || {},
+          seagrassData: evidence.seagrassData || {},
+          mangroveData: evidence.mangroveData || {},
+          saltMarshData: evidence.saltMarshData || {},
+          soilCores: evidence.soilCores || [],
+          sensorReadings: evidence.sensorReadings || {},
+          co2Estimate: evidence.co2Estimate || 0,
+          photos: evidence.photos || [],
+          videos: evidence.videos || [],
+          evidenceHash: evidence.evidenceHash || ''
+        })
+      });
+
+      if (response.status === 401) {
+        setError('Authentication failed. Please login again.');
+        setLoading(false);
+        return;
+      }
+
+      if (response.status === 403) {
+        setError('Access forbidden. You may not have the required permissions.');
+        setLoading(false);
+        return;
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert(`Project approved successfully! NFT minted and tokens distributed.${data.verifierReward ? ` Verifier reward: ${data.verifierReward.rewardAmount} tokens.` : ''}`);
+        // Refresh the project list
+        await fetchPendingProjects();
+        // Close modal if open
+        setSelectedProject(null);
+      } else {
+        setError(data.message || 'Failed to approve project');
+      }
+    } catch (err: any) {
+      setError(`Error approving project: ${err.message}`);
+      console.error('Error approving project:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReject = async (project: PendingProject) => {
+    // Try to use evidence _id first (if it's a full document), otherwise use project _id
+    const projectIdToUse = (project.evidence as any)?._id || project._id;
+    
+    if (!projectIdToUse) {
+      setError('Project ID not found. Please refresh and try again.');
+      return;
+    }
+
+    const reason = window.prompt(`Please provide a reason for rejecting project ${project.projectId}:`);
+    if (!reason) {
+      return; // User cancelled
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      const token = typeof window !== "undefined" ? window.localStorage.getItem("bc_token") : null;
+      
+      if (!token) {
+        setError('Authentication token not found. Please login again.');
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch(`http://localhost:5000/api/verification/reject/${projectIdToUse}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          comments: reason,
+          reason: reason
+        })
+      });
+
+      if (response.status === 401) {
+        setError('Authentication failed. Please login again.');
+        setLoading(false);
+        return;
+      }
+
+      if (response.status === 403) {
+        setError('Access forbidden. You may not have the required permissions.');
+        setLoading(false);
+        return;
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert('Project rejected successfully.');
+        // Refresh the project list
+        await fetchPendingProjects();
+        // Close modal if open
+        setSelectedProject(null);
+      } else {
+        setError(data.message || 'Failed to reject project');
+      }
+    } catch (err: any) {
+      setError(`Error rejecting project: ${err.message}`);
+      console.error('Error rejecting project:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const stats = [
     {
       label: "Pending Review",
@@ -499,11 +659,19 @@ export default function VerifierDashboard() {
                         </button>
                       )}
                       <div className="flex space-x-2">
-                        <button className="px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-1">
+                        <button 
+                          onClick={() => handleApprove(project)}
+                          disabled={loading || !project.evidence}
+                          className="px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
                           <CheckSquare className="h-4 w-4" />
                           <span className="text-sm">Approve</span>
                         </button>
-                        <button className="px-3 py-2 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-1">
+                        <button 
+                          onClick={() => handleReject(project)}
+                          disabled={loading}
+                          className="px-3 py-2 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
                           <XSquare className="h-4 w-4" />
                           <span className="text-sm">Reject</span>
                         </button>
@@ -638,11 +806,25 @@ export default function VerifierDashboard() {
 
             {/* Action Buttons */}
             <div className="mt-6 flex justify-center space-x-4">
-              <button className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-2">
+              <button 
+                onClick={() => {
+                  const project = projects.find(p => p.evidence?.projectId === selectedProject.projectId);
+                  if (project) handleApprove(project);
+                }}
+                disabled={loading || !selectedProject}
+                className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 <CheckSquare className="h-5 w-5" />
                 <span>Approve Project</span>
               </button>
-              <button className="px-6 py-3 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-2">
+              <button 
+                onClick={() => {
+                  const project = projects.find(p => p.evidence?.projectId === selectedProject.projectId);
+                  if (project) handleReject(project);
+                }}
+                disabled={loading || !selectedProject}
+                className="px-6 py-3 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 <XSquare className="h-5 w-5" />
                 <span>Reject Project</span>
               </button>
