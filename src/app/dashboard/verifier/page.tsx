@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   CheckCircle, XCircle, Clock, Eye, Search, Filter,
   MapPin, Calendar, User, FileText, Camera, Globe,
@@ -10,43 +10,85 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-interface Project {
-  _id: string;
-  projectId: string;
+interface EvidenceGatewayLink {
+  hash: string;
+  gateways: {
+    ipfs: string;
+    pinata: string;
+    cloudflare: string;
+  };
 }
 
 interface ProjectDetails {
-  _id: string;
+  _id?: string;
   projectId: string;
-  timestampISO: string;
-  gps: {
-    latitude: number;
-    longitude: number;
-    precision: number;
-    _id: string;
+  timestampISO?: string;
+  gps?: {
+    latitude?: number;
+    longitude?: number;
+    precision?: number;
+    _id?: string;
   };
   photos: string[];
   videos: string[];
-  ecosystemType: string;
-  soilCores: Array<{
-    _id: string;
-    depth_cm: number;
-    carbon_kg: number;
+  ecosystemType?: string;
+  soilCores?: Array<{
+    soilCoreId?: string;
+    depthCm?: number;
+    sampleLabel?: string;
   }>;
-  co2Estimate: number;
-  evidenceHash: string;
+  co2Estimate?: number;
+  evidenceHash?: string;
+  status?: string;
+  submittedAt?: string;
+  inspector?: string;
+}
+
+interface PendingProject {
+  _id: string;
+  projectId: string;
   status: string;
-  submittedAt: string;
-  __v: number;
+  ownerId?: string;
+  assignedInspector?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  evidence: ProjectDetails | null;
+  ipfs: EvidenceGatewayLink[];
 }
 
 export default function VerifierDashboard() {
   const [isVisible, setIsVisible] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState('all');
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<PendingProject[]>([]);
   const [selectedProject, setSelectedProject] = useState<ProjectDetails | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const normalizeEvidence = (evidence?: any): ProjectDetails | null => {
+    if (!evidence) return null;
+    return {
+      ...evidence,
+      projectId: evidence.projectId || '',
+      photos: Array.isArray(evidence.photos) ? evidence.photos : [],
+      videos: Array.isArray(evidence.videos) ? evidence.videos : [],
+      soilCores: Array.isArray(evidence.soilCores) ? evidence.soilCores : [],
+      gps: evidence.gps || undefined,
+    };
+  };
+
+  const handleViewDetails = (project: PendingProject) => {
+    if (project.evidence) {
+      setSelectedProject(project.evidence);
+    } else {
+      fetchProjectDetails(project.projectId);
+    }
+  };
+
+  const gatewayOptions = [
+    { label: "IPFS.io", buildUrl: (hash: string) => `https://ipfs.io/ipfs/${hash}` },
+    { label: "Pinata", buildUrl: (hash: string) => `https://gateway.pinata.cloud/ipfs/${hash}` },
+    { label: "Cloudflare", buildUrl: (hash: string) => `https://cloudflare-ipfs.com/ipfs/${hash}` },
+  ];
 
   useEffect(() => {
     setIsVisible(true);
@@ -94,8 +136,13 @@ export default function VerifierDashboard() {
       const data = await response.json();
 
       if (data.success) {
-        setProjects(data.data || []);
-        console.log('Projects fetched successfully:', data.data);
+        const normalizedProjects = (data.data || []).map((project: any) => ({
+          ...project,
+          evidence: normalizeEvidence(project.evidence),
+          ipfs: Array.isArray(project.ipfs) ? project.ipfs : [],
+        }));
+        setProjects(normalizedProjects);
+        console.log('Projects fetched successfully:', normalizedProjects);
       } else {
         setError(data.message || 'Failed to fetch projects');
       }
@@ -155,8 +202,9 @@ export default function VerifierDashboard() {
       const data = await response.json();
 
       if (data.success) {
-        setSelectedProject(data.project);
-        console.log('Project details fetched successfully:', data.project);
+        const normalized = normalizeEvidence(data.project);
+        setSelectedProject(normalized);
+        console.log('Project details fetched successfully:', normalized);
       } else {
         setError(data.message || 'Failed to fetch project details');
       }
@@ -199,19 +247,19 @@ export default function VerifierDashboard() {
     }
   ];
 
-  // Dynamic verification queue based on backend data
-  const verificationQueue = projects.map(project => ({
-    id: project.projectId,
-    name: `${project.projectId} Project`,
-    organization: "Project Owner",
-    location: "Location TBD",
-    submittedDate: "2024-01-15",
-    status: "pending",
-    priority: "high",
-    evidenceCount: 0,
-    credits: "TBD tCO₂e",
-    lastActivity: "Just now"
-  }));
+  const filteredProjects = useMemo(() => {
+    return projects.filter((project) => {
+      if (selectedFilter === 'all') return true;
+      if (selectedFilter === 'pending') return project.status === 'Pending';
+      if (selectedFilter === 'additional_data') {
+        return (project.evidence?.status || '').toLowerCase() === 'additional_data';
+      }
+      if (selectedFilter === 'high') {
+        return (project.evidence?.co2Estimate || 0) >= 1000;
+      }
+      return true;
+    });
+  }, [projects, selectedFilter]);
 
   const recentDecisions = [
     {
@@ -241,7 +289,7 @@ export default function VerifierDashboard() {
   ];
 
   const getStatusColor = (status: string) => {
-    switch (status) {
+    switch ((status || '').toLowerCase()) {
       case 'pending': return 'text-amber-600 bg-amber-100';
       case 'additional_data': return 'text-blue-600 bg-blue-100';
       case 'approved': return 'text-green-600 bg-green-100';
@@ -251,7 +299,7 @@ export default function VerifierDashboard() {
   };
 
   const getPriorityColor = (priority: string) => {
-    switch (priority) {
+    switch ((priority || '').toLowerCase()) {
       case 'high': return 'text-red-600 bg-red-100';
       case 'medium': return 'text-amber-600 bg-amber-100';
       case 'low': return 'text-green-600 bg-green-100';
@@ -351,7 +399,7 @@ export default function VerifierDashboard() {
             </div>
           )}
 
-          {!loading && verificationQueue.length === 0 && !error && (
+          {!loading && filteredProjects.length === 0 && !error && (
             <div className="text-center py-8">
               <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-600">No projects found</p>
@@ -365,73 +413,106 @@ export default function VerifierDashboard() {
           )}
 
           <div className="space-y-4">
-            {verificationQueue.map((project, index) => (
-              <div key={index} className="bg-gradient-to-r from-white to-gray-50 border border-gray-200 rounded-2xl p-6 hover:shadow-lg transition-all duration-300 hover:scale-[1.01]">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
-                      <FileText className="h-6 w-6 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">{project.name}</h3>
-                      <div className="flex items-center space-x-4 text-sm text-gray-600">
-                        <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">{project.id}</span>
-                        <span>{project.organization}</span>
-                        <div className="flex items-center space-x-1">
-                          <MapPin className="h-4 w-4" />
-                          <span>{project.location}</span>
+            {filteredProjects.map((project) => {
+              const evidence = project.evidence;
+              const displayName = evidence?.projectId || project.projectId;
+              const ecosystemLabel = evidence?.ecosystemType
+                ? evidence.ecosystemType.replace("_", " ")
+                : "Ecosystem pending";
+              const locationLabel =
+                typeof evidence?.gps?.latitude === "number" && typeof evidence?.gps?.longitude === "number"
+                  ? `${evidence.gps.latitude.toFixed(3)}, ${evidence.gps.longitude.toFixed(3)}`
+                  : "Awaiting coordinates";
+              const submittedDate = evidence?.submittedAt
+                ? new Date(evidence.submittedAt).toLocaleDateString()
+                : "Not submitted";
+              const evidenceCount = evidence?.photos.length || 0;
+              const creditsLabel = evidence?.co2Estimate
+                ? `${evidence.co2Estimate.toLocaleString()} tCO₂e`
+                : "TBD tCO₂e";
+              const statusLabel = project.status || evidence?.status || "Pending";
+              const priorityLabel = (evidence?.co2Estimate || 0) >= 1000 ? "high" : "medium";
+
+              return (
+                <div
+                  key={project._id}
+                  className="bg-gradient-to-r from-white to-gray-50 border border-gray-200 rounded-2xl p-6 hover:shadow-lg transition-all duration-300 hover:scale-[1.01]"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                        <FileText className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900">{displayName}</h3>
+                        <div className="flex items-center space-x-4 text-sm text-gray-600">
+                          <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">{project.projectId}</span>
+                          <span className="capitalize">{ecosystemLabel}</span>
+                          <div className="flex items-center space-x-1">
+                            <MapPin className="h-4 w-4" />
+                            <span>{locationLabel}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div className={`px-3 py-1 rounded-full text-xs font-medium ${getPriorityColor(project.priority)}`}>
-                      {project.priority} priority
+                    <div className="flex items-center space-x-3">
+                      <div className={`px-3 py-1 rounded-full text-xs font-medium ${getPriorityColor(priorityLabel)}`}>
+                        {priorityLabel} priority
+                      </div>
+                      <div className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(statusLabel)}`}>
+                        {statusLabel.replace('_', ' ')}
+                      </div>
                     </div>
-                    <div className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
-                      {project.status.replace('_', ' ')}
-                    </div>
                   </div>
-                </div>
 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-6 text-sm text-gray-600">
-                    <div className="flex items-center space-x-1">
-                      <Calendar className="h-4 w-4" />
-                      <span>Submitted {project.submittedDate}</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-6 text-sm text-gray-600">
+                      <div className="flex items-center space-x-1">
+                        <Calendar className="h-4 w-4" />
+                        <span>Submitted {submittedDate}</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <FileText className="h-4 w-4" />
+                        <span>{evidenceCount} IPFS proofs</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <TrendingUp className="h-4 w-4" />
+                        <span>{creditsLabel}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-1">
-                      <FileText className="h-4 w-4" />
-                      <span>{project.evidenceCount} evidence files</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <TrendingUp className="h-4 w-4" />
-                      <span>{project.credits}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <button
-                      onClick={() => fetchProjectDetails(project.id)}
-                      disabled={loading}
-                      className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-2 disabled:opacity-50"
-                    >
-                      <Eye className="h-4 w-4" />
-                      <span>View Details</span>
-                    </button>
-                    <div className="flex space-x-2">
-                      <button className="px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-1">
-                        <CheckSquare className="h-4 w-4" />
-                        <span className="text-sm">Approve</span>
+                    <div className="flex items-center space-x-3">
+                      <button
+                        onClick={() => handleViewDetails(project)}
+                        disabled={loading}
+                        className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-2 disabled:opacity-50"
+                      >
+                        <Eye className="h-4 w-4" />
+                        <span>View Details</span>
                       </button>
-                      <button className="px-3 py-2 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-1">
-                        <XSquare className="h-4 w-4" />
-                        <span className="text-sm">Reject</span>
-                      </button>
+                      {project.ipfs.length > 0 && (
+                        <button
+                          onClick={() => window.open(project.ipfs[0].gateways.ipfs, "_blank")}
+                          className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-2"
+                        >
+                          <Database className="h-4 w-4" />
+                          <span>Proofs</span>
+                        </button>
+                      )}
+                      <div className="flex space-x-2">
+                        <button className="px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-1">
+                          <CheckSquare className="h-4 w-4" />
+                          <span className="text-sm">Approve</span>
+                        </button>
+                        <button className="px-3 py-2 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center space-x-1">
+                          <XSquare className="h-4 w-4" />
+                          <span className="text-sm">Reject</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -459,8 +540,16 @@ export default function VerifierDashboard() {
                   <div className="space-y-2 text-sm">
                     <div><span className="font-medium">Project ID:</span> {selectedProject.projectId}</div>
                     <div><span className="font-medium">Ecosystem Type:</span> {selectedProject.ecosystemType}</div>
-                    <div><span className="font-medium">Status:</span> <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded-full text-xs">{selectedProject.status}</span></div>
-                    <div><span className="font-medium">Submitted:</span> {new Date(selectedProject.submittedAt).toLocaleDateString()}</div>
+                    <div>
+                      <span className="font-medium">Status:</span>{" "}
+                      <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded-full text-xs">
+                        {selectedProject.status || "Pending"}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="font-medium">Submitted:</span>{" "}
+                      {selectedProject.submittedAt ? new Date(selectedProject.submittedAt).toLocaleDateString() : "—"}
+                    </div>
                   </div>
                 </div>
 
@@ -468,9 +557,9 @@ export default function VerifierDashboard() {
                 <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4">
                   <h3 className="font-semibold text-green-900 mb-3">Location</h3>
                   <div className="space-y-2 text-sm">
-                    <div><span className="font-medium">Latitude:</span> {selectedProject.gps.latitude}</div>
-                    <div><span className="font-medium">Longitude:</span> {selectedProject.gps.longitude}</div>
-                    <div><span className="font-medium">Precision:</span> {selectedProject.gps.precision}m</div>
+                    <div><span className="font-medium">Latitude:</span> {selectedProject.gps?.latitude ?? "—"}</div>
+                    <div><span className="font-medium">Longitude:</span> {selectedProject.gps?.longitude ?? "—"}</div>
+                    <div><span className="font-medium">Precision:</span> {selectedProject.gps?.precision ?? "—"}m</div>
                   </div>
                 </div>
               </div>
@@ -481,9 +570,48 @@ export default function VerifierDashboard() {
                 <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-4">
                   <h3 className="font-semibold text-purple-900 mb-3">Evidence Files</h3>
                   <div className="space-y-2 text-sm">
-                    <div><span className="font-medium">Photos:</span> {selectedProject.photos.length} files</div>
-                    <div><span className="font-medium">Videos:</span> {selectedProject.videos.length} files</div>
-                    <div><span className="font-medium">Evidence Hash:</span> <code className="text-xs bg-gray-100 px-1 rounded">{selectedProject.evidenceHash.slice(0, 20)}...</code></div>
+                    <div><span className="font-medium">Photos:</span> {selectedProject.photos?.length || 0} files</div>
+                    <div><span className="font-medium">Videos:</span> {selectedProject.videos?.length || 0} files</div>
+                    {selectedProject.evidenceHash && (
+                      <div>
+                        <span className="font-medium">Evidence Hash:</span>{" "}
+                        <code className="text-xs bg-gray-100 px-1 rounded">
+                          {selectedProject.evidenceHash.slice(0, 20)}...
+                        </code>
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-4 space-y-2">
+                    {selectedProject.photos && selectedProject.photos.length > 0 ? (
+                      selectedProject.photos.map((hash, idx) => (
+                        <div
+                          key={`${hash}-${idx}`}
+                          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 bg-white border border-purple-100 rounded-lg p-3"
+                        >
+                          <div className="flex flex-col">
+                            <span className="text-xs font-mono text-gray-700 truncate">{hash}</span>
+                            <span className="text-[11px] text-gray-500">Proof #{idx + 1}</span>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {gatewayOptions.map((gateway) => (
+                              <a
+                                key={`${gateway.label}-${hash}`}
+                                href={gateway.buildUrl(hash)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors"
+                              >
+                                {gateway.label}
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-xs text-gray-500">
+                        No IPFS proof links available yet.
+                      </p>
+                    )}
                   </div>
                 </div>
 

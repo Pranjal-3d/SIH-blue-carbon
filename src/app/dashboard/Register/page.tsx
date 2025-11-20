@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
+import { ethers } from 'ethers';
 import {
   MapPin, Upload, TreePine, CheckCircle, ArrowRight, ArrowLeft,
   Waves, Leaf, Building, Shield, Zap, BarChart3,
@@ -349,6 +350,9 @@ const FileUploadSection = ({ category, title, acceptedTypes, documents, onFileUp
 
 export default function ProjectRegistrationPage() {
   const [currentStep, setCurrentStep] = useState(0);
+  const [walletAddress, setWalletAddress] = useState<string>('');
+  const [isConnectingWallet, setIsConnectingWallet] = useState(false);
+  const [walletError, setWalletError] = useState('');
   const [formData, setFormData] = useState<FormData>({
     projectId: '',
     projectName: '',
@@ -387,6 +391,37 @@ export default function ProjectRegistrationPage() {
   const particlesRef = useRef<Particle[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
   const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());
+
+  const connectWallet = async () => {
+    try {
+      setWalletError('');
+      setIsConnectingWallet(true);
+
+      if (typeof window === 'undefined' || !(window as any).ethereum) {
+        setWalletError('Metamask not detected. Please install Metamask.');
+        return;
+      }
+
+      const provider = new ethers.BrowserProvider((window as any).ethereum);
+      const accounts = await provider.send('eth_requestAccounts', []);
+
+      if (!accounts || accounts.length === 0) {
+        setWalletError('No Metamask accounts found. Please unlock Metamask.');
+        return;
+      }
+
+      setWalletAddress(accounts[0]);
+    } catch (error: any) {
+      console.error('Wallet connection error:', error);
+      if (error?.code === 4001) {
+        setWalletError('Connection request rejected.');
+      } else {
+        setWalletError('Failed to connect wallet. Please try again.');
+      }
+    } finally {
+      setIsConnectingWallet(false);
+    }
+  };
 
   // Pinata IPFS Configuration - Using real credentials
   const PINATA_JWT = process.env.NEXT_PUBLIC_PINATA_JWT || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiIxMzRlMjY5OS00N2MxLTQ5YjUtYmQ0OC0yNTUzMjFiYjA0YzAiLCJlbWFpbCI6ImFzaGltYWdvZWwxODFAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInBpbl9wb2xpY3kiOnsicmVnaW9ucyI6W3siZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiRlJBMSJ9LHsiZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiTllDMSJ9XSwidmVyc2lvbiI6MX0sIm1mYV9lbmFibGVkIjpmYWxzZSwic3RhdHVzIjoiQUNUSVZFIn0sImF1dGhlbnRpY2F0aW9uVHlwZSI6InNjb3BlZEtleSIsInNjb3BlZEtleUtleSI6IjkxM2QzMjIzNzg3MDE5ZGE5NTk2Iiwic2NvcGVkS2V5U2VjcmV0IjoiY2ExM2YyZjQ0MjQ4MjQ1MDllYTliNjI3YzlhYzYwODllMWYwZTlmYjY4ZDhhOGJkYzgwOGJkNzY4OTQwODFjZSIsImV4cCI6MTc5MDAxNjAxMH0.3Z8cJGkYX-mJTJcnMBZ6mCJwSa0Wht9LyPn831O4XoA';
@@ -934,19 +969,37 @@ export default function ProjectRegistrationPage() {
   };
 
   const handleSubmit = async () => {
-    try {
-      const submissionData = {
-        ...formData,
-        submissionTimestamp: new Date().toISOString(),
-        blockchainReady: true
-      };
+try {
+  const submissionData = {
+    ...formData,
+    submissionTimestamp: new Date().toISOString(),
+    blockchainReady: true
+  };
 
-      console.log('Submission Data:', submissionData);
-      alert('Project registration submitted successfully!');
-    } catch (error) {
-      console.error('Submission error:', error);
-      alert('Failed to submit project registration. Please try again.');
-    }
+  console.log('Prepared Submission Data:', submissionData);
+  const token = localStorage.getItem("bc_token");
+
+  const response = await fetch("http://localhost:5000/api/evidence", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+    body: JSON.stringify(submissionData),
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.message || "Failed to submit evidence");
+  }
+
+  const result = await response.json();
+  console.log("Backend Response:", result);
+  alert("Project registration submitted successfully!");
+} catch (error) {
+  console.error("Submission error:", error);
+  alert("Failed to submit project registration. Please try again.");
+}
   };
 
   const nextStep = () => {
@@ -1825,7 +1878,7 @@ export default function ProjectRegistrationPage() {
                   className="px-8 py-3 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-xl hover:from-blue-700 hover:to-green-700 transition-all duration-300 font-semibold flex items-center gap-2"
                 >
                   <Zap className="h-5 w-5" />
-                  Submit to Blockchain
+                  Submit for Verification
                 </button>
               </div>
               <p className="text-center text-sm text-gray-500 mt-3">
@@ -1873,6 +1926,38 @@ export default function ProjectRegistrationPage() {
           <p className="text-gray-600 text-lg">
             Register your marine ecosystem restoration project on the blockchain
           </p>
+        </div>
+
+        {/* Wallet Connect Banner */}
+        <div className="mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 rounded-2xl bg-white/70 shadow-lg border border-white/60">
+            <div>
+              <p className="text-sm text-gray-500">Wallet Status</p>
+              {walletAddress ? (
+                <p className="text-gray-900 font-semibold">
+                  Connected: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+                </p>
+              ) : (
+                <p className="text-gray-700">Not connected</p>
+              )}
+            </div>
+            <button
+              onClick={connectWallet}
+              disabled={isConnectingWallet}
+              className="w-full sm:w-auto px-5 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md hover:shadow-lg disabled:opacity-60 transition-all"
+            >
+              {isConnectingWallet
+                ? 'Connecting...'
+                : walletAddress
+                ? 'Reconnect Wallet'
+                : 'Connect Metamask'}
+            </button>
+          </div>
+          {walletError && (
+            <p className="mt-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2">
+              {walletError}
+            </p>
+          )}
         </div>
 
         {/* Progress Indicator */}
