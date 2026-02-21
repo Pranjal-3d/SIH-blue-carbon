@@ -11,8 +11,80 @@ import {
   User, Building2
 } from "lucide-react";
 
+// Type definitions
+interface User {
+  id: number;
+  name: string;
+  role: string;
+  status: string;
+  joined: string;
+  projects: number;
+  credits: number;
+  avatar: string;
+  priority: string;
+  lastActive: string;
+}
+
+interface Methodology {
+  id: number;
+  name: string;
+  version: string;
+  lastUpdated: string;
+  status: string;
+  usage: number;
+  accuracy: number;
+}
+
+interface VerificationItem {
+  id: string;
+  name: string;
+  submittedDate: string;
+  status: string;
+  priority: string;
+  estimatedCredits: number;
+  organization: string;
+}
+
+interface Activity {
+  action: string;
+  user?: string;
+  project?: string;
+  method?: string;
+  amount?: string;
+  time: string;
+  type: string;
+}
+
+interface RegistrationForm {
+  name: string;
+  email: string;
+  password: string;
+  role: string;
+}
+
+interface SubmitStatus {
+  type: 'success' | 'error';
+  message: string;
+}
+
+interface Stat {
+  label: string;
+  value: string;
+  change: string;
+  changeType: string;
+  icon: React.ReactElement;
+  textColor: string;
+  accentColor: string;
+}
+
+interface Tab {
+  id: string;
+  label: string;
+  icon: React.ReactElement;
+}
+
 // Utility functions
-const getStatusColor = (status) => {
+const getStatusColor = (status: string): string => {
   if (status === "pending")
     return "text-amber-700 bg-amber-100 border-amber-200";
   if (status === "active")
@@ -26,7 +98,7 @@ const getStatusColor = (status) => {
   return "text-gray-600 bg-gray-100 border-gray-200";
 };
 
-const getPriorityColor = (priority) => {
+const getPriorityColor = (priority: string): string => {
   if (priority === "high")
     return "text-red-600 bg-red-50 border-red-200";
   if (priority === "medium")
@@ -37,22 +109,22 @@ const getPriorityColor = (priority) => {
 };
 
 export default function AdminDashboard() {
-  const [isVisible, setIsVisible] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedFilter, setSelectedFilter] = useState("all");
-  const [activeTab, setActiveTab] = useState("users");
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [notifications, setNotifications] = useState(3);
-  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
-  const [registrationForm, setRegistrationForm] = useState({
+  const [isVisible, setIsVisible] = useState<boolean>(false);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedFilter, setSelectedFilter] = useState<string>("all");
+  const [activeTab, setActiveTab] = useState<string>("users");
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [notifications, setNotifications] = useState<number>(3);
+  const [showRegistrationModal, setShowRegistrationModal] = useState<boolean>(false);
+  const [registrationForm, setRegistrationForm] = useState<RegistrationForm>({
     name: "",
     email: "",
     password: "",
     role: "owner"
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState(null);
-  const [users, setUsers] = useState([
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [submitStatus, setSubmitStatus] = useState<SubmitStatus | null>(null);
+  const [users, setUsers] = useState<User[]>([
     {
       id: 1,
       name: "Coastal Conservation Foundation",
@@ -108,13 +180,13 @@ export default function AdminDashboard() {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleRefresh = async () => {
+  const handleRefresh = async (): Promise<void> => {
     setIsRefreshing(true);
     await new Promise((r) => setTimeout(r, 1500));
     setIsRefreshing(false);
   };
 
-  const handleRegistrationSubmit = async (e) => {
+  const handleRegistrationSubmit = async (e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>): Promise<void> => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus(null);
@@ -131,7 +203,7 @@ export default function AdminDashboard() {
       if (response.ok) {
         setSubmitStatus({ type: 'success', message: 'User registered successfully!' });
         // Add the new user to the local state
-        const newUser = {
+        const newUser: User = {
           id: users.length + 1,
           name: registrationForm.name,
           role: registrationForm.role === 'owner' ? 'NGO' : 'Verifier',
@@ -169,7 +241,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const stats = [
+  const stats: Stat[] = [
     {
       label: "Total Projects",
       value: "63",
@@ -208,7 +280,7 @@ export default function AdminDashboard() {
     },
   ];
 
-  const methodologies = [
+  const methodologies: Methodology[] = [
     {
       id: 1,
       name: "Mangrove Carbon Estimation",
@@ -238,7 +310,7 @@ export default function AdminDashboard() {
     },
   ];
 
-  const verificationQueue = [
+  const verificationQueue: VerificationItem[] = [
     {
       id: "BC-2024-045",
       name: "Mangrove Restoration Project",
@@ -268,7 +340,7 @@ export default function AdminDashboard() {
     },
   ];
 
-  const recentActivities = [
+  const recentActivities: Activity[] = [
     {
       action: "New user registration",
       user: "Ocean Guardians",
@@ -302,7 +374,7 @@ export default function AdminDashboard() {
     });
   }, [users, selectedFilter, searchTerm]);
 
-  const tabs = [
+  const tabs: Tab[] = [
     { id: "overview", label: "Overview", icon: React.createElement(BarChart3, { className: "h-4 w-4" }) },
     { id: "users", label: "Users", icon: React.createElement(Users, { className: "h-4 w-4" }) },
     { id: "queue", label: "Queue", icon: React.createElement(Clock, { className: "h-4 w-4" }) },
