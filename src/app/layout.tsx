@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 
 const geistSans = Geist({
@@ -24,25 +24,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [scrollY, setScrollY] = useState(0);
   const pathname = usePathname();
-
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   const navItems = [
     { label: "Home", href: "/" },
-    { label: "Projects", href: "/projects" },
     { label: "Marketplace", href: "/marketplace" },
     { label: "Login", href: "/auth" },
   ];
 
   const isActivePage = (href: string) => {
-    if (href.startsWith('#')) return false; // Don't highlight anchor links
-    return pathname === href;
+    if (href.startsWith('#')) return false;
+    if (href === "/") return pathname === "/";
+    return pathname === href || pathname?.startsWith(href + "/");
   };
 
   return (
@@ -51,26 +44,14 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-gray-900`}
       >
         <div className="min-h-screen flex flex-col">
-          {/* Enhanced Glassy Navbar */}
-          <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-            scrollY > 50 
-              ? 'bg-white/95 backdrop-blur-xl border-b border-gray-200/50 shadow-xl' 
-              : 'bg-white/80 backdrop-blur-xl border-b border-white/20 shadow-lg'
-          }`}>
-            <div className={`absolute inset-0 transition-opacity duration-300 ${
-              scrollY > 50 
-                ? 'bg-gradient-to-r from-blue-500/5 via-transparent to-green-500/5' 
-                : 'bg-gradient-to-r from-blue-500/10 via-transparent to-green-500/10'
-            }`}></div>
-            
-            <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          {/* Navbar - fixed, high z-index above map (Leaflet uses ~400), always visible */}
+          <header className="fixed top-0 left-0 right-0 z-[1000] bg-white/95 backdrop-blur-xl border-b border-slate-200/80 shadow-sm">
+            <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
               
               {/* Logo */}
               <Link
                 href="/"
-                className={`font-bold tracking-tight text-lg transition-all duration-300 flex items-center space-x-2 group ${
-                  scrollY > 50 ? 'text-gray-800 hover:text-blue-600' : 'text-white hover:text-blue-200'
-                }`}
+                className="font-bold tracking-tight text-lg flex items-center space-x-2 group text-gray-800 hover:text-blue-600 transition-colors"
               >
                 <span className="text-2xl group-hover:scale-110 transition-transform">🌊</span>
                 <span className="bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
@@ -78,20 +59,16 @@ export default function RootLayout({
                 </span>
               </Link>
 
-              {/* Desktop Navigation */}
+              {/* Desktop Navigation - always dark text for visibility */}
               <nav className="hidden md:flex items-center gap-2 text-sm">
                 {navItems.map((item) => (
                   <Link
                     key={item.label}
                     href={item.href}
-                    className={`px-4 py-2 text-black rounded-lg transition-all duration-300 backdrop-blur-sm font-medium ${
-                      scrollY > 50
-                        ? isActivePage(item.href)
-                          ? 'text-blue-600 bg-blue-50'
-                          : 'text-black hover:text-blue-600 hover:bg-gray-100/80'
-                        : isActivePage(item.href)
-                          ? 'text-blue-200 bg-white/20'
-                          : 'text-white/90 hover:text-white hover:bg-white/20'
+                    className={`px-4 py-2 rounded-lg transition-colors font-medium ${
+                      isActivePage(item.href)
+                        ? 'text-blue-600 bg-blue-50'
+                        : 'text-gray-700 hover:text-blue-600 hover:bg-gray-100'
                     }`}
                   >
                     {item.label}
@@ -102,21 +79,15 @@ export default function RootLayout({
               {/* CTA Button */}
               <Link
                 href="/auth"
-                className="hidden md:block relative px-6 py-2.5 text-sm font-semibold rounded-xl overflow-hidden group"
+                className="hidden md:block relative px-6 py-2.5 text-sm font-semibold rounded-xl overflow-hidden group bg-gradient-to-r from-blue-500 to-green-500 text-white hover:shadow-lg transition-shadow"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-green-500 opacity-90 group-hover:opacity-100 transition-opacity"></div>
-                <div className="absolute inset-0 bg-white/10 backdrop-blur-sm group-hover:bg-white/5 transition-colors"></div>
-                <span className="relative text-black drop-shadow-sm">Get Started</span>
+                Get Started
               </Link>
 
               {/* Mobile Menu Button */}
               <button 
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className={`md:hidden p-2 rounded-lg transition-all duration-300 backdrop-blur-sm ${
-                  scrollY > 50
-                    ? 'text-gray-700 hover:text-gray-900 hover:bg-gray-100/80'
-                    : 'text-white/90 hover:text-white hover:bg-white/20'
-                }`}
+                className="md:hidden p-2 rounded-lg text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors"
               >
                 {isMobileMenuOpen ? (
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -162,16 +133,10 @@ export default function RootLayout({
               </div>
             )}
 
-            {/* Subtle glow effect */}
-            <div className={`absolute bottom-0 left-0 right-0 h-px transition-opacity duration-300 ${
-              scrollY > 50
-                ? 'bg-gradient-to-r from-transparent via-gray-300/50 to-transparent'
-                : 'bg-gradient-to-r from-transparent via-white/30 to-transparent'
-            }`}></div>
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 pt-16">{children}</main>
+          <main className="flex-1 pt-14 min-h-screen">{children}</main>
         </div>
       </body>
     </html>

@@ -16,7 +16,6 @@ export default function Navbar() {
 
   const navItems = [
     { label: "Home", href: "/" },
-    { label: "Projects", href: "/projects" },
     { label: "Marketplace", href: "/marketplace" },
     { label: "About", href: "/about" },
     { label: "MRV System", href: "/mrv" },

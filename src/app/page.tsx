@@ -304,11 +304,6 @@ export default function BlueCarbonLanding() {
                 </div>
               </div>
               
-              <Link href="/projects" className="block w-full">
-                <button className="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all">
-                  View All Projects
-                </button>
-              </Link>
             </div>
           </div>
         </div>
@@ -454,7 +449,7 @@ export default function BlueCarbonLanding() {
             >
               Register a Project
             </Link>
-            <Link href="/projects" className="px-8 py-4 border-2 border-white text-white rounded-xl font-semibold hover:bg-white hover:text-blue-600 transition-all text-lg">
+            <Link href="/marketplace" className="px-8 py-4 border-2 border-white text-white rounded-xl font-semibold hover:bg-white hover:text-blue-600 transition-all text-lg">
               Support a Project
             </Link>
           </div>
