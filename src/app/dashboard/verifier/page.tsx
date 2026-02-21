@@ -1,21 +1,15 @@
 "use client";
 
-<<<<<<< HEAD
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
-=======
-import React, { useState, useEffect, useMemo } from 'react';
->>>>>>> e8bc08fda70fac0c108c4b25ab2a5c33e3be065e
 import {
-  CheckCircle, XCircle, Clock, Eye, Search, Filter,
-  MapPin, Calendar, User, FileText, Camera, Globe,
-  TrendingUp, Award, AlertTriangle, BarChart3, Zap,
-  ArrowRight, Download, MessageSquare, Star, RefreshCw,
+  CheckCircle, XCircle, Clock, Eye, Filter,
+  MapPin, Calendar, FileText, Camera,
+  TrendingUp, Award, MessageSquare, Star, RefreshCw,
   Database, ExternalLink, CheckSquare, XSquare
 } from "lucide-react";
 import Link from "next/link";
 
-<<<<<<< HEAD
 const GEECanopyPanel = dynamic(
   () =>
     import("@/components/GEECanopyPanel").then(
@@ -31,10 +25,6 @@ const GEECanopyPanel = dynamic(
   }
 );
 
-interface Project {
-  _id: string;
-  projectId: string;
-=======
 interface EvidenceGatewayLink {
   hash: string;
   gateways: {
@@ -42,7 +32,14 @@ interface EvidenceGatewayLink {
     pinata: string;
     cloudflare: string;
   };
->>>>>>> e8bc08fda70fac0c108c4b25ab2a5c33e3be065e
+}
+
+interface SoilCore {
+  soilCoreId?: string;
+  depthCm?: number;
+  depth_cm?: number;
+  sampleLabel?: string;
+  carbon_kg?: number;
 }
 
 interface ProjectDetails {
@@ -58,16 +55,16 @@ interface ProjectDetails {
   photos: string[];
   videos: string[];
   ecosystemType?: string;
-  soilCores?: Array<{
-    soilCoreId?: string;
-    depthCm?: number;
-    sampleLabel?: string;
-  }>;
+  soilCores?: SoilCore[];
   co2Estimate?: number;
   evidenceHash?: string;
   status?: string;
   submittedAt?: string;
   inspector?: string;
+  seagrassData?: any;
+  mangroveData?: any;
+  saltMarshData?: any;
+  sensorReadings?: any;
 }
 
 interface PendingProject {
@@ -145,8 +142,6 @@ export default function VerifierDashboard() {
       // Handle different response statuses
       if (response.status === 401) {
         setError('Authentication failed. Please login again.');
-        // Optional: Redirect to login
-        // window.location.href = '/login';
         return;
       }
 
@@ -250,14 +245,6 @@ export default function VerifierDashboard() {
     }
   };
 
-<<<<<<< HEAD
-  const projectCenter = selectedProject
-    ? ([selectedProject.gps.latitude, selectedProject.gps.longitude] as [
-        number,
-        number
-      ])
-    : undefined;
-=======
   const handleApprove = async (project: PendingProject) => {
     if (!project.evidence) {
       setError('Project evidence not available. Cannot approve without evidence.');
@@ -346,78 +333,81 @@ export default function VerifierDashboard() {
   };
 
   const handleReject = async (project: PendingProject) => {
-    // Try to use evidence _id first (if it's a full document), otherwise use project _id
-    const projectIdToUse = (project.evidence as any)?._id || project._id;
-    
+    const projectIdToUse =
+      (project.evidence as any)?._id || project._id;
+  
     if (!projectIdToUse) {
-      setError('Project ID not found. Please refresh and try again.');
+      setError("Project ID not found. Please refresh and try again.");
       return;
     }
-
-    const reason = window.prompt(`Please provide a reason for rejecting project ${project.projectId}:`);
-    if (!reason) {
-      return; // User cancelled
-    }
-
+  
+    const reason = window.prompt(
+      `Please provide a reason for rejecting project ${project.projectId}:`
+    );
+  
+    if (!reason) return;
+  
     setLoading(true);
     setError(null);
+  
     try {
-      const token = typeof window !== "undefined" ? window.localStorage.getItem("bc_token") : null;
-      
+      const token =
+        typeof window !== "undefined"
+          ? window.localStorage.getItem("bc_token")
+          : null;
+  
       if (!token) {
-        setError('Authentication token not found. Please login again.');
+        setError("Authentication token not found. Please login again.");
         setLoading(false);
         return;
       }
-
-      const response = await fetch(`http://localhost:5000/api/verification/reject/${projectIdToUse}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          comments: reason,
-          reason: reason
-        })
-      });
-
-      if (response.status === 401) {
-        setError('Authentication failed. Please login again.');
-        setLoading(false);
-        return;
-      }
-
-      if (response.status === 403) {
-        setError('Access forbidden. You may not have the required permissions.');
-        setLoading(false);
-        return;
-      }
-
+  
+      const response = await fetch(
+        `http://localhost:5000/api/verification/reject/${projectIdToUse}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            comments: reason,
+            reason: reason,
+          }),
+        }
+      );
+  
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        throw new Error(
+          errorData.message || `HTTP error! status: ${response.status}`
+        );
       }
-
+  
       const data = await response.json();
-
+  
       if (data.success) {
-        alert('Project rejected successfully.');
-        // Refresh the project list
+        alert("Project rejected successfully.");
         await fetchPendingProjects();
-        // Close modal if open
         setSelectedProject(null);
       } else {
-        setError(data.message || 'Failed to reject project');
+        setError(data.message || "Failed to reject project");
       }
     } catch (err: any) {
       setError(`Error rejecting project: ${err.message}`);
-      console.error('Error rejecting project:', err);
+      console.error("Error rejecting project:", err);
     } finally {
       setLoading(false);
     }
   };
->>>>>>> e8bc08fda70fac0c108c4b25ab2a5c33e3be065e
+
+  // Calculate project center for map - defined once
+  const projectCenter = useMemo(() => {
+    if (selectedProject?.gps?.latitude && selectedProject?.gps?.longitude) {
+      return [selectedProject.gps.latitude, selectedProject.gps.longitude] as [number, number];
+    }
+    return undefined;
+  }, [selectedProject]);
 
   const stats = [
     {
@@ -827,13 +817,13 @@ export default function VerifierDashboard() {
                   <h3 className="font-semibold text-orange-900 mb-3">Carbon Estimation</h3>
                   <div className="space-y-2 text-sm">
                     <div><span className="font-medium">CO₂ Estimate:</span> {selectedProject.co2Estimate} tCO₂e</div>
-                    <div><span className="font-medium">Soil Cores:</span> {selectedProject.soilCores.length} samples</div>
-                    {selectedProject.soilCores.length > 0 && (
+                    <div><span className="font-medium">Soil Cores:</span> {selectedProject.soilCores?.length || 0} samples</div>
+                    {selectedProject.soilCores && selectedProject.soilCores.length > 0 && (
                       <div className="mt-2">
                         <div className="text-xs font-medium text-gray-600 mb-1">Soil Core Details:</div>
                         {selectedProject.soilCores.map((core, index) => (
                           <div key={index} className="text-xs bg-white p-2 rounded border">
-                            Depth: {core.depth_cm}cm, Carbon: {core.carbon_kg}kg
+                            Depth: {core.depth_cm || core.depthCm}cm{core.carbon_kg ? `, Carbon: ${core.carbon_kg}kg` : ''}
                           </div>
                         ))}
                       </div>
