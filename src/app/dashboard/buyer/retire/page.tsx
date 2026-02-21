@@ -15,23 +15,66 @@ import {
   RefreshCw
 } from 'lucide-react';
 
-const Card = ({ children, className = "" }) => (
+interface CardProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+const Card = ({ children, className = "" }: CardProps) => (
   <div className={`bg-white rounded-xl border border-gray-200 shadow-sm ${className}`}>
     {children}
   </div>
 );
 
-const CardHeader = ({ title, className = "" }) => (
+interface CardHeaderProps {
+  title: string;
+  className?: string;
+}
+
+const CardHeader = ({ title, className = "" }: CardHeaderProps) => (
   <div className={`p-6 border-b border-gray-100 ${className}`}>
     <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
   </div>
 );
 
-const CardBody = ({ children, className = "" }) => (
+interface CardBodyProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+const CardBody = ({ children, className = "" }: CardBodyProps) => (
   <div className={`p-6 ${className}`}>
     {children}
   </div>
 );
+
+interface RetiredCredit {
+  id: string;
+  quantity: number;
+  retiredDate: string;
+  certificateNumber: string;
+  retiredBy?: string;
+  retiredTime?: string;
+  impactStatement?: string;
+}
+
+interface CertificateData {
+  id: string;
+  quantity: number;
+  retiredBy: string;
+  retiredDate: string;
+  retiredTime: string;
+  impactStatement: string;
+  certificateNumber: string;
+}
+
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  variant?: "primary" | "secondary" | "success";
+  className?: string;
+}
 
 const Button = ({ 
   children, 
@@ -40,7 +83,7 @@ const Button = ({
   variant = "primary", 
   className = "",
   ...props 
-}) => {
+}: ButtonProps) => {
   const baseClasses = "px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center justify-center space-x-2";
   const variants = {
     primary: "bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-300 disabled:cursor-not-allowed",
@@ -63,10 +106,10 @@ const Button = ({
 export default function BuyerRetirePage() {
   const [retireQuantity, setRetireQuantity] = useState('');
   const [isRetiring, setIsRetiring] = useState(false);
-  const [retireStatus, setRetireStatus] = useState(null);
+  const [retireStatus, setRetireStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [availableCredits, setAvailableCredits] = useState(1250); // Mock available credits
-  const [retiredCredits, setRetiredCredits] = useState([]);
-  const [certificate, setCertificate] = useState(null);
+  const [retiredCredits, setRetiredCredits] = useState<RetiredCredit[]>([]);
+  const [certificate, setCertificate] = useState<CertificateData | null>(null);
 
   // Mock user data - in real app this would come from auth context
   const userData = {
@@ -77,7 +120,7 @@ export default function BuyerRetirePage() {
 
   const handleRetire = async () => {
     // Validation
-    if (!retireQuantity || retireQuantity <= 0) {
+    if (!retireQuantity || Number(retireQuantity) <= 0) {
       setRetireStatus({
         type: 'error',
         message: 'Please enter a valid quantity to retire'
@@ -107,7 +150,7 @@ export default function BuyerRetirePage() {
         retiredBy: userData.name,
         retiredDate: new Date().toLocaleDateString(),
         retiredTime: new Date().toLocaleTimeString(),
-        impactStatement: `This certificate represents the retirement of ${retireQuantity} carbon credits, equivalent to removing approximately ${Math.round(retireQuantity * 0.001)} tons of CO2 from the atmosphere.`,
+        impactStatement: `This certificate represents the retirement of ${retireQuantity} carbon credits, equivalent to removing approximately ${Math.round(Number(retireQuantity) * 0.001)} tons of CO2 from the atmosphere.`,
         certificateNumber: `BC-RET-${Date.now().toString().slice(-8)}`
       };
 
@@ -133,7 +176,7 @@ export default function BuyerRetirePage() {
     }
   };
 
-  const downloadCertificate = (cert) => {
+  const downloadCertificate = (cert: RetiredCredit) => {
     // Create a new window for the PDF content
     const printWindow = window.open('', '_blank');
     
@@ -500,11 +543,13 @@ export default function BuyerRetirePage() {
     </html>`;
     
     // Write the HTML content and trigger print
-    printWindow.document.write(certificateHTML);
-    printWindow.document.close();
+    if (printWindow) {
+      printWindow.document.write(certificateHTML);
+      printWindow.document.close();
+    }
   };
 
-  const handleKeyPress = (e) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleRetire();
     }
@@ -598,7 +643,7 @@ export default function BuyerRetirePage() {
               </div>
 
               {/* Impact Preview */}
-              {retireQuantity && retireQuantity > 0 && (
+              {retireQuantity && Number(retireQuantity) > 0 && (
                 <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
                   <h4 className="font-semibold text-emerald-800 mb-2 flex items-center">
                     <Leaf className="h-4 w-4 mr-2" />
@@ -606,7 +651,7 @@ export default function BuyerRetirePage() {
                   </h4>
                   <p className="text-emerald-700 text-sm">
                     Retiring {retireQuantity} credits will remove approximately{' '}
-                    <strong>{Math.round(retireQuantity * 0.001)} tons of CO2</strong> equivalent 
+                    <strong>{Math.round(Number(retireQuantity) * 0.001)} tons of CO2</strong> equivalent 
                     from circulation, representing your commitment to environmental stewardship.
                   </p>
                 </div>

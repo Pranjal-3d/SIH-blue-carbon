@@ -404,7 +404,7 @@ export function GEECanopyPanel({
                 </div>
                 <div className="text-right">
                   <p className="text-gray-600">
-                    {center[0] + point.latOffset}, {center[1] + point.lngOffset}
+                    {point.lat.toFixed(5)}, {point.lng.toFixed(5)}
                   </p>
                 </div>
               </div>
