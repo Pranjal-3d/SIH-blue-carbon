@@ -35,9 +35,21 @@ export default function Navbar() {
 
     const handleAccountsChanged = (accounts: string[]) => {
       setWalletAddress(accounts && accounts.length > 0 ? accounts[0] : '');
+      if (accounts.length === 0) {
+        setWalletError('Wallet disconnected');
+      }
     };
 
     ethereum.on?.('accountsChanged', handleAccountsChanged);
+
+    // Check if already connected
+    ethereum.request({ method: 'eth_accounts' })
+      .then((accounts: string[]) => {
+        if (accounts && accounts.length > 0) {
+          setWalletAddress(accounts[0]);
+        }
+      })
+      .catch(console.error);
 
     return () => {
       ethereum.removeListener?.('accountsChanged', handleAccountsChanged);
@@ -50,7 +62,7 @@ export default function Navbar() {
       setIsConnectingWallet(true);
 
       if (typeof window === 'undefined' || !(window as any).ethereum) {
-        setWalletError('Metamask not detected');
+        setWalletError('MetaMask not detected. Please install MetaMask extension.');
         return;
       }
 
@@ -58,14 +70,14 @@ export default function Navbar() {
       const accounts = await provider.send('eth_requestAccounts', []);
 
       if (!accounts || accounts.length === 0) {
-        setWalletError('No accounts available');
+        setWalletError('No accounts available. Please unlock MetaMask.');
         return;
       }
 
       setWalletAddress(accounts[0]);
     } catch (error: any) {
       if (error?.code === 4001) {
-        setWalletError('Connection rejected');
+        setWalletError('Connection rejected by user');
       } else {
         setWalletError('Failed to connect wallet');
       }
@@ -166,24 +178,43 @@ export default function Navbar() {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <>
-            <div className="md:hidden bg-white border-t shadow-lg">
-              <div className="px-4 pt-4 pb-3 space-y-2">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    onClick={handleMobileNavClick}
-                    className={`block w-full text-left px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-md transition-colors ${
-                      isActivePage(item.href) ? 'text-blue-600 bg-blue-50' : ''
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
+          <div className="md:hidden bg-white border-t shadow-lg">
+            <div className="px-4 pt-4 pb-3 space-y-2">
+              {/* Navigation Links */}
+              {navItems.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  onClick={handleMobileNavClick}
+                  className={`block w-full text-left px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-md transition-colors ${
+                    isActivePage(item.href) ? 'text-blue-600 bg-blue-50' : ''
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
 
-<<<<<<< HEAD
+              {/* Action Buttons */}
               <div className="pt-4 border-t border-gray-200 flex flex-col space-y-2">
+                {/* Wallet Connection */}
+                {walletAddress ? (
+                  <div className="px-3 py-2 text-sm font-semibold text-gray-800 bg-gray-100 rounded-md">
+                    {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      connectWallet();
+                      handleMobileNavClick();
+                    }}
+                    disabled={isConnectingWallet}
+                    className="px-3 py-2 text-left rounded-md bg-gray-900 text-white text-sm font-medium disabled:opacity-60"
+                  >
+                    {isConnectingWallet ? 'Connecting...' : 'Connect Wallet'}
+                  </button>
+                )}
+                
+                {/* Login Link */}
                 <Link 
                   href="/auth"
                   onClick={handleMobileNavClick}
@@ -191,6 +222,8 @@ export default function Navbar() {
                 >
                   Login
                 </Link>
+                
+                {/* Register Project Link */}
                 <Link
                   href="/register-project"
                   onClick={handleMobileNavClick}
@@ -198,46 +231,16 @@ export default function Navbar() {
                 >
                   Register Project
                 </Link>
-=======
-                <div className="pt-4 border-t border-gray-200 flex flex-col space-y-2">
-                  {walletAddress ? (
-                    <div className="px-3 py-2 text-sm font-semibold text-gray-800 bg-gray-100 rounded-md">
-                      {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        connectWallet();
-                        handleMobileNavClick();
-                      }}
-                      disabled={isConnectingWallet}
-                      className="px-3 py-2 text-left rounded-md bg-gray-900 text-white text-sm font-medium disabled:opacity-60"
-                    >
-                      {isConnectingWallet ? 'Connecting...' : 'Connect Wallet'}
-                    </button>
-                  )}
-                  <Link 
-                    href="/auth"
-                    onClick={handleMobileNavClick}
-                    className="px-3 py-2 text-blue-600 text-left hover:bg-blue-50 rounded-md transition-colors"
-                  >
-                    Login
-                  </Link>
-                  <Link
-                    href="/dashboard/Register"
-                    onClick={handleMobileNavClick}
-                    className="px-3 py-2 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg text-center hover:shadow-lg transition-all"
-                  >
-                    Register Project
-                  </Link>
-                </div>
->>>>>>> e8bc08fda70fac0c108c4b25ab2a5c33e3be065e
               </div>
+
+              {/* Error Message */}
+              {walletError && (
+                <div className="pt-2">
+                  <p className="text-sm text-red-600 px-3">{walletError}</p>
+                </div>
+              )}
             </div>
-            {walletError && (
-              <p className="px-4 pb-4 text-sm text-red-600">{walletError}</p>
-            )}
-          </>
+          </div>
         )}
       </header>
     </>
